@@ -1,714 +1,600 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CRYPT</title>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Calculatrice</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background:#000;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  font-family:'Helvetica Neue', Arial, sans-serif;
+  overflow:hidden;
+  max-width:430px;
+  margin:0 auto;
+}
 
-        body {
-            overflow: hidden;
-            background: #000;
-            color: #0f0;
-            font-family: 'VT323', monospace;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 12px;
-        }
+/* ── PANELS ── */
+.panel {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:100;
+  flex-direction:column;
+  max-width:430px;
+  margin:0 auto;
+}
+.panel.active { display:flex; }
 
-        #matrix {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1; display: block;
-        }
+.panel-header {
+  display:flex;
+  align-items:center;
+  padding:20px 16px 14px;
+  border-bottom:1px solid #1f1f1f;
+}
+.panel-title { color:#fff; font-size:19px; font-weight:400; flex:1; }
+.panel-close {
+  background:none; border:none; color:#888;
+  font-size:22px; cursor:pointer;
+  width:40px; height:40px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%;
+}
+.panel-close:active { background:rgba(255,255,255,0.08); }
+.panel-body { flex:1; overflow-y:auto; padding:16px; }
 
-        .overlay {
-            position: relative; z-index: 2;
-            width: 100%; max-width: 420px;
-            background: rgba(10,10,10,0.93);
-            border: 3px solid #0f0;
-            border-radius: 16px;
-            padding: 16px 14px;
-            box-shadow: 0 0 25px rgba(0,255,0,0.4);
-            text-align: center;
-            max-height: 96vh;
-            overflow-y: auto;
-        }
+/* HISTORY */
+.history-empty { color:#555; text-align:center; margin-top:60px; font-size:15px; }
+.history-item {
+  padding:14px 4px; border-bottom:1px solid #1a1a1a;
+  text-align:right; cursor:pointer; border-radius:8px;
+}
+.history-item:active { background:rgba(255,255,255,0.05); }
+.history-expr { color:#666; font-size:14px; margin-bottom:4px; }
+.history-result { color:#fff; font-size:24px; font-weight:300; }
+.history-clear-btn {
+  background:none; border:1px solid #2a2a2a; color:#888;
+  padding:10px 20px; border-radius:20px; font-size:14px;
+  cursor:pointer; margin-top:16px; width:100%;
+}
+.history-clear-btn:active { background:#1a1a1a; }
 
-        h1 { font-size: 34px; margin-bottom: 6px; letter-spacing: 2px; }
+/* CONVERTER */
+.conv-cat-label { color:#888; font-size:12px; letter-spacing:0.5px; margin-bottom:8px; }
+.converter-select {
+  background:#1c1c1c; border:none; color:#fff; font-size:15px;
+  padding:12px 14px; border-radius:12px; width:100%; margin-bottom:14px;
+  outline:none; appearance:none; -webkit-appearance:none; cursor:pointer;
+}
+.conv-row { display:flex; gap:10px; margin-bottom:12px; align-items:stretch; }
+.conv-input-wrap {
+  flex:1; background:#1c1c1c; border-radius:12px; padding:12px 14px;
+}
+.conv-label { color:#666; font-size:11px; margin-bottom:4px; }
+.conv-input {
+  background:none; border:none; color:#fff;
+  font-size:22px; font-weight:300; width:100%; outline:none;
+}
+.conv-unit { color:#43a047; font-size:12px; margin-top:3px; }
+.conv-swap {
+  background:none; border:none; color:#43a047; font-size:22px;
+  cursor:pointer; width:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.conv-selects { display:flex; gap:10px; }
+.conv-selects .converter-select { flex:1; }
 
-        input[type=text] {
-            width: 100%; padding: 10px; margin: 8px 0;
-            background: #111; border: 2px solid #0f0;
-            color: #0f0; font-size: 20px; text-align: center;
-            font-family: 'VT323', monospace; border-radius: 4px;
-        }
+/* FORMULA */
+.formula-cat-title {
+  color:#43a047; font-size:12px; font-weight:600;
+  letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;
+}
+.formula-category { margin-bottom:20px; }
+.formula-item {
+  background:#1c1c1c; border-radius:12px;
+  padding:13px 14px; margin-bottom:8px; cursor:pointer;
+}
+.formula-item:active { background:#242424; }
+.formula-name { color:#fff; font-size:15px; margin-bottom:4px; }
+.formula-eq { color:#43a047; font-size:13px; font-family:monospace; }
 
-        button.small {
-            background: #111; color: #0f0; border: 2px solid #0f0;
-            padding: 8px 16px; margin: 4px;
-            font-size: 18px; font-family: 'VT323', monospace; cursor: pointer;
-            border-radius: 4px;
-        }
-        button.small:active { background: #0f0; color: #000; }
+/* ── MAIN ── */
+.display-area {
+  flex:1; display:flex; flex-direction:column;
+  justify-content:flex-end; padding:0 20px 4px;
+  min-height:160px;
+}
+.display-expr { color:#555; font-size:15px; text-align:right; min-height:20px; word-break:break-all; margin-bottom:2px; }
+#display {
+  color:#fff; font-size:64px; font-weight:200;
+  text-align:right; word-break:break-all; line-height:1.1;
+  letter-spacing:-2px; padding-bottom:4px;
+}
 
-        /* ===== ZONE PUSH + CADENAS ===== */
-        .push-row {
-            display: flex; align-items: center; justify-content: center;
-            gap: 14px; margin: 12px 0;
-        }
+/* ── TOOLBAR ── */
+.toolbar {
+  display:flex; align-items:center;
+  padding:4px 12px 12px;
+}
+.tb-btn {
+  background:none; border:none; cursor:pointer;
+  width:50px; height:42px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:10px;
+}
+.tb-btn:active { background:rgba(255,255,255,0.07); }
 
-        .lock-btn {
-            width: 46px; height: 46px; border-radius: 50%;
-            border: 2px solid #0f0; background: #0a1a0a;
-            color: #0f0; font-size: 14px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; transition: 0.15s;
-            box-shadow: 0 0 8px rgba(0,255,0,0.4);
-            font-family: 'VT323', monospace; letter-spacing: 0;
-        }
-        .lock-btn.locked {
-            background: #1a0000;
-            border-color: #f00; color: #f00;
-            box-shadow: 0 0 10px rgba(255,0,0,0.6);
-        }
+/* Clock SVG */
+.tb-btn svg { width:22px; height:22px; }
+.ico-grey { fill:none; stroke:#666; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.ico-green { fill:none; stroke:#43a047; stroke-width:1.8; stroke-linecap:round; }
 
-        /* ===== BOUTON PUSH TO TALK ===== */
-        #talkBtn {
-            width: 180px; height: 88px; margin: 0;
-            background: rgba(155,0,255,0.78); border: none; border-radius: 12px;
-            color: white; font-size: 32px; font-weight: bold;
-            font-family: 'VT323', monospace;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; position: relative;
-            box-shadow: 0 0 15px rgba(155,0,255,0.6); transition: 0.05s linear;
-        }
-        #talkBtn::before {
-            content: ''; position: absolute;
-            top: -3px; left: -3px; right: -3px; bottom: -3px;
-            background: linear-gradient(45deg,#ff00cc,#9b00ff,#00ffcc,#9b00ff,#ff00cc);
-            background-size: 300% 300%; border-radius: 14px;
-            z-index: -1; opacity: 0.8; animation: borderMatrix 3s ease infinite;
-        }
-        @keyframes borderMatrix {
-            0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
-        }
-        #talkBtn:active, #talkBtn.active {
-            background: rgba(0,255,0,0.85); transform: scale(0.96); box-shadow: 0 0 25px #0f0;
-        }
+.tb-spacer { flex:1; }
 
-        /* ===== BOUTONS ACTION ===== */
-        .action-bar {
-            display: flex; justify-content: center; gap: 8px;
-            margin: 8px 0; flex-wrap: wrap;
-        }
-        .action-btn {
-            background: #111; border: 2px solid #0f0; color: #0f0;
-            font-family: 'VT323', monospace; font-size: 20px;
-            padding: 7px 14px; border-radius: 8px; cursor: pointer;
-            transition: 0.1s;
-        }
-        .action-btn:hover { background: #1a1a1a; }
-        .action-btn.danger { border-color: #f00; color: #f00; }
-        .action-btn.danger:hover { background: rgba(255,0,0,0.1); }
+/* ── DIVIDER ── */
+.divider { height:1px; background:#1e1e1e; }
 
-        /* ===== VIDEO ===== */
-        #videoPanel {
-            display: none; margin: 8px 0;
-            border: 2px solid #0f0; border-radius: 10px;
-            overflow: hidden; position: relative; background: #000;
-        }
-        #remoteVideo { width: 100%; max-height: 200px; object-fit: cover; display: block; }
-        #localVideo {
-            position: absolute; bottom: 6px; right: 6px;
-            width: 80px; height: 60px; object-fit: cover;
-            border: 2px solid #0f0; border-radius: 6px; background: #111;
-        }
-        .video-label {
-            position: absolute; top: 6px; left: 8px;
-            font-size: 14px; color: #0f0; text-shadow: 0 0 4px #0f0;
-        }
+/* ── BUTTONS ── */
+.buttons {
+  padding:12px 10px 16px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+}
 
-        /* ===== STATUS ===== */
-        #status { font-size: 20px; min-height: 40px; margin-top: 6px; }
+.btn {
+  aspect-ratio:1/1;
+  border-radius:50%;
+  border:none;
+  font-size:26px;
+  font-weight:400;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  outline:none;
+  position:relative;
+  -webkit-appearance:none;
+  appearance:none;
+  background-image:none;
+  box-shadow:none;
+}
+.btn:active { transform:scale(0.89); }
 
-        .connected-list {
-            background: #111; border: 2px solid #0f0;
-            padding: 6px; max-height: 80px; overflow-y: auto;
-            font-size: 16px; text-align: left; margin: 6px 0; border-radius: 4px;
-        }
-
-        /* ===== CHAT ===== */
-        .messaging-area { margin-top: 12px; border-top: 1px solid #2a8f2a; padding-top: 10px; }
-        .chat-title { font-size: 18px; text-align: left; margin-bottom: 6px; }
-        .messages-box {
-            background: #0a0a0a; border: 1px solid #2a8f2a; border-radius: 12px;
-            padding: 8px; display: flex; flex-direction: column; gap: 6px;
-            margin-bottom: 8px; text-align: left; max-height: 220px; overflow-y: auto;
-        }
-        .msg-bubble {
-            max-width: 88%; padding: 6px 10px; border-radius: 14px;
-            font-size: 15px; line-height: 1.3; word-break: break-word;
-            font-family: 'VT323', monospace;
-        }
-        .msg-left { align-self: flex-start; background: #1a2a1a; border-left: 3px solid #0f0; color: #cfc; }
-        .msg-right { align-self: flex-end; background: #2a3a2a; border-right: 3px solid #0f0; color: #efe; }
-        .msg-sender { font-size: 11px; opacity: 0.8; margin-bottom: 2px; }
-        .msg-time { font-size: 10px; text-align: right; margin-top: 3px; opacity: 0.6; }
-        .msg-media img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; border: 1px solid #0f0; }
-        .msg-media video { max-width: 100%; border-radius: 8px; margin-top: 4px; border: 1px solid #0f0; }
-
-        /* ===== BARRE ENVOI ===== */
-        .chat-input-row { display: flex; gap: 6px; margin-top: 4px; align-items: center; }
-        .chat-input-row input {
-            flex: 1; margin: 0; padding: 8px 12px; font-size: 16px;
-            background: #111; border: 1px solid #0f0; border-radius: 40px;
-            color: #0f0; font-family: 'VT323', monospace;
-        }
-        .chat-input-row button {
-            background: #111; border: 1px solid #0f0; color: #0f0;
-            padding: 0 14px; border-radius: 40px; font-size: 20px; cursor: pointer;
-            height: 40px;
-        }
-        .chat-input-row button:active { background: #0f0; color: #000; }
-        #mediaPickerBtn { font-size: 18px; padding: 0 12px; }
-        #fileInput { display: none; }
-
-        /* ===== LIGHTBOX ===== */
-        #lightbox {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.92); z-index: 9999;
-            justify-content: center; align-items: center;
-        }
-        #lightbox.open { display: flex; }
-        #lightbox img { max-width: 95vw; max-height: 90vh; border: 2px solid #0f0; border-radius: 8px; }
-        #lightbox-close {
-            position: absolute; top: 16px; right: 20px;
-            font-size: 36px; color: #0f0; cursor: pointer; font-family: 'VT323', monospace;
-        }
-
-        /* ===== POPUP APPEL ===== */
-        #callPopup {
-            display: none; position: fixed; inset: 0; z-index: 8888;
-            background: rgba(0,0,0,0.85); justify-content: center; align-items: center;
-        }
-        #callPopup.open { display: flex; }
-        .call-box {
-            background: #0a0a0a; border: 3px solid #0f0;
-            border-radius: 16px; padding: 28px 32px; text-align: center;
-            box-shadow: 0 0 30px rgba(0,255,0,0.5);
-        }
-        .call-box h2 { font-size: 26px; margin-bottom: 10px; }
-        .call-box p { font-size: 16px; color: #aaa; margin-bottom: 18px; }
-        .call-actions { display: flex; gap: 16px; justify-content: center; }
-        .call-accept {
-            background: #0a2a0a; border: 2px solid #0f0; color: #0f0;
-            font-size: 20px; font-family: 'VT323', monospace;
-            padding: 10px 24px; border-radius: 8px; cursor: pointer;
-        }
-        .call-accept:hover { background: rgba(0,255,0,0.15); }
-        .call-reject {
-            background: #2a0a0a; border: 2px solid #f00; color: #f00;
-            font-size: 20px; font-family: 'VT323', monospace;
-            padding: 10px 24px; border-radius: 8px; cursor: pointer;
-        }
-        .call-reject:hover { background: rgba(255,0,0,0.15); }
-
-        .info { font-size: 13px; color: #0a0; margin-top: 10px; }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #0f0; border-radius: 2px; }
-    </style>
+/* No glass — flat solid backgrounds only */
+.btn.num    { background:#1c1c1c; color:#fff; }
+.btn.func   { background:#282828; color:#fff; }
+.btn.func.clear   { color:#e05555; }
+.btn.func.green   { color:#43a047; }
+.btn.op     { background:#1c1c1c; color:#43a047; }
+.btn.equals { background:#43a047; color:#000; font-weight:500; font-size:30px; }
+</style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-
-<div id="lightbox">
-    <span id="lightbox-close">X</span>
-    <img id="lightbox-img" src="" alt="photo">
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+  <div class="panel-header">
+    <span class="panel-title">Historique</span>
+    <button class="panel-close" onclick="closePanel('panel-history')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="history-empty" id="history-empty">Aucun historique</div>
+    <div id="history-list"></div>
+    <button class="history-clear-btn" id="history-clear-btn" style="display:none" onclick="clearHistory()">Effacer l'historique</button>
+  </div>
 </div>
 
-<div id="callPopup">
-    <div class="call-box">
-        <h2 id="callPopupTitle">APPEL ENTRANT</h2>
-        <p id="callPopupSender">De : ???</p>
-        <div class="call-actions">
-            <button class="call-accept" id="callAcceptBtn">ACCEPTER</button>
-            <button class="call-reject" id="callRejectBtn">REFUSER</button>
-        </div>
+<!-- CONVERTER PANEL -->
+<div class="panel" id="panel-converter">
+  <div class="panel-header">
+    <span class="panel-title">Convertisseur d'unités</span>
+    <button class="panel-close" onclick="closePanel('panel-converter')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="conv-cat-label">CATÉGORIE</div>
+    <select class="converter-select" id="conv-type" onchange="initConverter()">
+      <option value="length">Longueur</option>
+      <option value="weight">Poids / Masse</option>
+      <option value="temp">Température</option>
+      <option value="area">Surface</option>
+      <option value="volume">Volume</option>
+      <option value="speed">Vitesse</option>
+      <option value="time">Temps</option>
+    </select>
+
+    <div class="conv-row">
+      <div class="conv-input-wrap">
+        <div class="conv-label">DE</div>
+        <input class="conv-input" id="conv-from-val" type="number" value="1" oninput="convertFrom()">
+        <div class="conv-unit" id="conv-from-unit"></div>
+      </div>
+      <button class="conv-swap" onclick="swapUnits()" title="Inverser">⇄</button>
+      <div class="conv-input-wrap">
+        <div class="conv-label">VERS</div>
+        <input class="conv-input" id="conv-to-val" type="number" readonly>
+        <div class="conv-unit" id="conv-to-unit"></div>
+      </div>
     </div>
+
+    <div class="conv-selects">
+      <select class="converter-select" id="conv-from-sel" onchange="onFromSelChange()"></select>
+      <select class="converter-select" id="conv-to-sel"   onchange="convertFrom()"></select>
+    </div>
+  </div>
 </div>
 
-<div class="overlay">
-    <h1>CRYPT</h1>
-
-    <input type="text" id="roomName" placeholder="Code">
-    <button onclick="joinRoom()" class="small">REJOINDRE</button>
-
-    <div style="margin-top:6px;text-align:left;font-size:16px;">Connectes :</div>
-    <div id="connectedList" class="connected-list">Aucun</div>
-
-    <div class="push-row">
-        <button class="lock-btn" id="speakerLockBtn" title="Haut-parleur on/off">HP</button>
-        <button id="talkBtn">PUSH</button>
-        <button class="lock-btn" id="micLockBtn" title="Micro continu on/off">MIC</button>
+<!-- FORMULA PANEL -->
+<div class="panel" id="panel-formula">
+  <div class="panel-header">
+    <span class="panel-title">Formules</span>
+    <button class="panel-close" onclick="closePanel('panel-formula')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="formula-category">
+      <div class="formula-cat-title">Géométrie</div>
+      <div class="formula-item" onclick="useFormula('3.14159265*r*r')">
+        <div class="formula-name">Aire d'un cercle</div>
+        <div class="formula-eq">A = π × r²</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('2*3.14159265*r')">
+        <div class="formula-name">Périmètre d'un cercle</div>
+        <div class="formula-eq">P = 2π × r</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('(b*h)/2')">
+        <div class="formula-name">Aire d'un triangle</div>
+        <div class="formula-eq">A = (b × h) / 2</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('l*l')">
+        <div class="formula-name">Aire d'un carré</div>
+        <div class="formula-eq">A = l²</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('l*w')">
+        <div class="formula-name">Aire d'un rectangle</div>
+        <div class="formula-eq">A = l × w</div>
+      </div>
     </div>
-
-    <div class="action-bar">
-        <button class="action-btn" id="callBtn" onclick="startCall(false)">APPEL</button>
-        <button class="action-btn" id="videoBtn" onclick="startCall(true)">VISIO</button>
-        <button class="action-btn danger" id="hangupBtn" style="display:none" onclick="hangup()">FIN</button>
+    <div class="formula-category">
+      <div class="formula-cat-title">Physique</div>
+      <div class="formula-item" onclick="useFormula('m*v')">
+        <div class="formula-name">Quantité de mouvement</div>
+        <div class="formula-eq">p = m × v</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('m*9.81*h')">
+        <div class="formula-name">Énergie potentielle</div>
+        <div class="formula-eq">Ep = m × g × h</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('0.5*m*v*v')">
+        <div class="formula-name">Énergie cinétique</div>
+        <div class="formula-eq">Ec = ½ × m × v²</div>
+      </div>
     </div>
-
-    <div id="videoPanel">
-        <video id="remoteVideo" autoplay playsinline></video>
-        <video id="localVideo" autoplay playsinline muted></video>
-        <div class="video-label">LIVE</div>
+    <div class="formula-category">
+      <div class="formula-cat-title">Mathématiques</div>
+      <div class="formula-item" onclick="useFormula('n*(n+1)/2')">
+        <div class="formula-name">Somme de 1 à n</div>
+        <div class="formula-eq">S = n(n+1)/2</div>
+      </div>
+      <div class="formula-item" onclick="useFormula('(a+b)*(a+b)')">
+        <div class="formula-name">Carré d'une somme</div>
+        <div class="formula-eq">(a+b)²</div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div id="status">Pret</div>
+<!-- MAIN CALCULATOR -->
+<div class="display-area">
+  <div class="display-expr" id="display-expr"></div>
+  <div id="display">0</div>
+</div>
 
-    <div class="messaging-area">
-        <div class="chat-title">Messages</div>
-        <div id="messagesBox" class="messages-box"></div>
-        <div class="chat-input-row">
-            <button id="mediaPickerBtn" title="Envoyer photo/video">&#128206;</button>
-            <input type="file" id="fileInput" accept="image/*,video/*">
-            <input type="text" id="smsInput" placeholder="Message..." maxlength="300">
-            <button id="sendSmsBtn">&#10148;</button>
-        </div>
-    </div>
+<div class="toolbar">
+  <!-- History (clock) -->
+  <button class="tb-btn" onclick="openPanel('panel-history')" title="Historique">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" class="ico-grey"/>
+      <polyline points="12,7 12,12 15,15" class="ico-grey"/>
+    </svg>
+  </button>
 
-    <div class="info">
-        Maintiens PUSH pour parler · HP coupe le son recu · MIC verrouille le micro · trombone pour photo/video
-    </div>
+  <!-- Converter (ruler) -->
+  <button class="tb-btn" onclick="openPanel('panel-converter'); initConverter();" title="Convertisseur">
+    <svg viewBox="0 0 24 24">
+      <rect x="2" y="8" width="20" height="8" rx="1.5" class="ico-grey"/>
+      <line x1="5"  y1="8"  x2="5"  y2="12" class="ico-grey"/>
+      <line x1="8"  y1="8"  x2="8"  y2="11" class="ico-grey"/>
+      <line x1="11" y1="8"  x2="11" y2="12" class="ico-grey"/>
+      <line x1="14" y1="8"  x2="14" y2="11" class="ico-grey"/>
+      <line x1="17" y1="8"  x2="17" y2="12" class="ico-grey"/>
+      <line x1="20" y1="8"  x2="20" y2="11" class="ico-grey"/>
+    </svg>
+  </button>
+
+  <!-- Formula (f(x) box) -->
+  <button class="tb-btn" onclick="openPanel('panel-formula')" title="Formules">
+    <svg viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2" class="ico-grey"/>
+      <text x="12" y="15.5" text-anchor="middle" font-size="8" font-family="monospace" fill="#666" style="font-style:italic">f(x)</text>
+    </svg>
+  </button>
+
+  <div class="tb-spacer"></div>
+
+  <!-- Backspace -->
+  <button class="tb-btn" onclick="backspace()" title="Effacer">
+    <svg viewBox="0 0 24 24">
+      <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" class="ico-green"/>
+      <line x1="15" y1="9" x2="9"  y2="15" class="ico-green"/>
+      <line x1="9"  y1="9" x2="15" y2="15" class="ico-green"/>
+    </svg>
+  </button>
+</div>
+
+<div class="divider"></div>
+
+<div class="buttons">
+  <button class="btn func clear" onclick="clearAll()">C</button>
+  <button class="btn func green" onclick="pressParen()">( )</button>
+  <button class="btn func green" onclick="pressPercent()">%</button>
+  <button class="btn op"         onclick="pressOp('/')">÷</button>
+
+  <button class="btn num" onclick="pressNum('7')">7</button>
+  <button class="btn num" onclick="pressNum('8')">8</button>
+  <button class="btn num" onclick="pressNum('9')">9</button>
+  <button class="btn op"  onclick="pressOp('*')">×</button>
+
+  <button class="btn num" onclick="pressNum('4')">4</button>
+  <button class="btn num" onclick="pressNum('5')">5</button>
+  <button class="btn num" onclick="pressNum('6')">6</button>
+  <button class="btn op"  onclick="pressOp('-')">−</button>
+
+  <button class="btn num" onclick="pressNum('1')">1</button>
+  <button class="btn num" onclick="pressNum('2')">2</button>
+  <button class="btn num" onclick="pressNum('3')">3</button>
+  <button class="btn op"  onclick="pressPlus()">+</button>
+
+  <button class="btn num" onclick="toggleSign()">+/−</button>
+  <button class="btn num" onclick="pressNum('0')">0</button>
+  <button class="btn num" onclick="pressDecimal()">,</button>
+  <button class="btn equals" onclick="calculate()">=</button>
 </div>
 
 <script>
-// ===================== MATRIX =====================
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-let width, height, columns, drops;
-const chars = "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ01";
+/* ══ STATE ══ */
+let input = "";
+let lastWasOp = false;
+let justCalculated = false;
+let history = JSON.parse(localStorage.getItem("calc_history") || "[]");
 
-function resizeMatrix() {
-    width = window.innerWidth; height = window.innerHeight;
-    canvas.width = width; canvas.height = height;
-    const colCount = Math.floor(width / 18) + 5;
-    columns = colCount;
-    drops = new Array(colCount).fill(0).map(() => Math.random() * -height);
+/* ══ DISPLAY ══ */
+function updateDisplay(val) {
+  const el = document.getElementById("display");
+  const str = (!val || val === "") ? "0" : val;
+  const digits = str.replace(/[^0-9]/g, "").length;
+  el.style.fontSize = digits > 13 ? "30px" : digits > 10 ? "42px" : digits > 7 ? "52px" : "64px";
+  el.textContent = str.replace(/\./g, ",");
 }
-function drawMatrix() {
-    if (!ctx) return;
-    ctx.fillStyle = 'rgba(0,0,0,0.05)';
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = '#0f0'; ctx.font = '18px "VT323", monospace';
-    for (let i = 0; i < columns; i++) {
-        const char = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(char, i * 18, drops[i] * 18);
-        if (drops[i] * 18 > height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-    }
-    requestAnimationFrame(drawMatrix);
-}
-window.addEventListener('resize', resizeMatrix);
-resizeMatrix(); drawMatrix();
+function updateExpr(v) { document.getElementById("display-expr").textContent = v; }
 
-// ===================== SONS =====================
-function playBeep(freq, duration, vol) {
-    vol = vol || 0.2;
-    try {
-        var ac = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = ac.createOscillator(), gain = ac.createGain();
-        osc.connect(gain); gain.connect(ac.destination);
-        osc.frequency.value = freq; gain.gain.value = vol; osc.type = 'sine';
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + duration);
-        osc.stop(ac.currentTime + duration);
-        setTimeout(function(){ ac.close(); }, duration * 1000 + 100);
-    } catch(e) {}
-}
-function playTalkieStart()  { playBeep(880, 0.08, 0.22); }
-function playTalkieEnd()    { playBeep(660, 0.12, 0.22); }
-function playSmsSent()      { playBeep(1200, 0.05, 0.18); setTimeout(function(){ playBeep(1500, 0.05, 0.18); }, 60); }
-function playSmsReceived()  { playBeep(1000, 0.07, 0.16); setTimeout(function(){ playBeep(800, 0.09, 0.16); }, 100); }
-function playCallRing()     { playBeep(440, 0.3, 0.25); setTimeout(function(){ playBeep(440, 0.3, 0.25); }, 500); }
-
-// ===================== ETAT =====================
-var peer, connections = [], localStream = null;
-var mediaRecorder, audioChunks = [];
-var isHost = false, myId = "";
-var currentCall = null, pendingCall = null, isVideoCall = false;
-var speakerMuted = false;
-var micLocked = false;
-
-var statusEl        = document.getElementById('status');
-var connectedListEl = document.getElementById('connectedList');
-var talkBtn         = document.getElementById('talkBtn');
-var messagesBox     = document.getElementById('messagesBox');
-var smsInput        = document.getElementById('smsInput');
-var sendSmsBtn      = document.getElementById('sendSmsBtn');
-var callBtn         = document.getElementById('callBtn');
-var videoBtn        = document.getElementById('videoBtn');
-var hangupBtn       = document.getElementById('hangupBtn');
-var videoPanel      = document.getElementById('videoPanel');
-var remoteVideo     = document.getElementById('remoteVideo');
-var localVideo      = document.getElementById('localVideo');
-var fileInput       = document.getElementById('fileInput');
-var mediaPickerBtn  = document.getElementById('mediaPickerBtn');
-var callPopup       = document.getElementById('callPopup');
-var callAcceptBtn   = document.getElementById('callAcceptBtn');
-var callRejectBtn   = document.getElementById('callRejectBtn');
-var callPopupTitle  = document.getElementById('callPopupTitle');
-var callPopupSender = document.getElementById('callPopupSender');
-var lightbox        = document.getElementById('lightbox');
-var lightboxImg     = document.getElementById('lightbox-img');
-var lightboxClose   = document.getElementById('lightbox-close');
-var speakerLockBtn  = document.getElementById('speakerLockBtn');
-var micLockBtn      = document.getElementById('micLockBtn');
-
-// ===================== UI =====================
-function updateList() {
-    if (connections.length === 0) {
-        connectedListEl.innerHTML = "Aucun";
-    } else {
-        connectedListEl.innerHTML = connections.map(function(c){ return '> ' + c.peer.substring(0,14); }).join('<br>');
-    }
+/* ══ INPUT ══ */
+function pressNum(v) {
+  if (justCalculated) { input = ""; justCalculated = false; updateExpr(""); }
+  input += v; lastWasOp = false; updateDisplay(input);
 }
 
-function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
+function pressDecimal() {
+  if (justCalculated) { input = "0"; justCalculated = false; updateExpr(""); }
+  const parts = input.split(/[+\-*/]/);
+  if (parts[parts.length-1].includes(".")) return;
+  if (!input || lastWasOp) input += "0";
+  input += "."; lastWasOp = false; updateDisplay(input);
 }
 
-function addMessageToChat(content, sender, isOwn, type) {
-    isOwn = isOwn || false;
-    type = type || 'text';
-    var time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    var msgDiv = document.createElement('div');
-    msgDiv.classList.add('msg-bubble', isOwn ? 'msg-right' : 'msg-left');
-    var bodyHtml = '';
-    if (type === 'text') {
-        bodyHtml = '<div>' + escapeHtml(content) + '</div>';
-    } else if (type === 'image') {
-        bodyHtml = '<div class="msg-media"><img src="' + content + '" alt="photo" onclick="openLightbox(this.src)"></div>';
-    } else if (type === 'video') {
-        bodyHtml = '<div class="msg-media"><video src="' + content + '" controls playsinline></video></div>';
-    }
-    msgDiv.innerHTML = '<div class="msg-sender">' + (isOwn ? 'Moi' : escapeHtml(sender)) + '</div>' + bodyHtml + '<div class="msg-time">' + time + '</div>';
-    messagesBox.appendChild(msgDiv);
-    msgDiv.scrollIntoView({behavior:'smooth', block:'end'});
+function pressOp(op) {
+  justCalculated = false;
+  if (input === "" && op !== "-") return;
+  if (lastWasOp) input = input.slice(0, -1);
+  input += op; lastWasOp = true; updateDisplay(input);
 }
 
-function openLightbox(src) {
-    lightboxImg.src = src;
-    lightbox.classList.add('open');
-}
-lightboxClose.addEventListener('click', function(){ lightbox.classList.remove('open'); });
-lightbox.addEventListener('click', function(e){ if (e.target === lightbox) lightbox.classList.remove('open'); });
-
-// ===================== CADENAS HP (gauche) =====================
-speakerLockBtn.addEventListener('click', function() {
-    speakerMuted = !speakerMuted;
-    speakerLockBtn.textContent = speakerMuted ? 'OFF' : 'HP';
-    speakerLockBtn.classList.toggle('locked', speakerMuted);
-    if (connections.length > 0) {
-        var payload = { type: 'speaker-muted', muted: speakerMuted, senderId: myId };
-        if (isHost) { broadcast(payload); }
-        else if (connections[0] && connections[0].open) { connections[0].send(payload); }
-    }
-});
-
-// ===================== CADENAS MIC CONTINU (droite) =====================
-micLockBtn.addEventListener('click', function() {
-    micLocked = !micLocked;
-    micLockBtn.textContent = micLocked ? 'ON' : 'MIC';
-    micLockBtn.classList.toggle('locked', micLocked);
-    talkBtn.classList.toggle('active', micLocked);
-    if (micLocked) { startTalking(); }
-    else { stopTalking(); }
-});
-
-// ===================== P2P DATA =====================
-function broadcast(data, exceptConn) {
-    connections.forEach(function(c) {
-        if (c !== exceptConn && c.open) c.send(data);
-    });
+function pressParen() {
+  if (justCalculated) { input = ""; justCalculated = false; }
+  const o = (input.match(/\(/g)||[]).length;
+  const c = (input.match(/\)/g)||[]).length;
+  input += (o > c) ? ")" : "(";
+  lastWasOp = false; updateDisplay(input);
 }
 
-function addConnection(conn) {
-    if (connections.find(function(c){ return c.peer === conn.peer; })) return;
-    connections.push(conn);
-    updateList();
-    statusEl.textContent = connections.length + " connecte" + (connections.length > 1 ? "s" : "");
-
-    conn.on('data', function(data) {
-        if (data.type === 'audio' && data.blob) {
-            if (!speakerMuted) {
-                var blob = new Blob([data.blob], {type:'audio/webm'});
-                new Audio(URL.createObjectURL(blob)).play();
-            }
-            if (isHost) broadcast(data, conn);
-        }
-        else if (data.type === 'text' && data.text) {
-            addMessageToChat(data.text, data.senderId ? data.senderId.substring(0,10) : "?", false);
-            playSmsReceived();
-            if (isHost) broadcast(data, conn);
-        }
-        else if (data.type === 'image' && data.dataUrl) {
-            addMessageToChat(data.dataUrl, data.senderId ? data.senderId.substring(0,10) : "?", false, 'image');
-            playSmsReceived();
-            if (isHost) broadcast(data, conn);
-        }
-        else if (data.type === 'video' && data.dataUrl) {
-            addMessageToChat(data.dataUrl, data.senderId ? data.senderId.substring(0,10) : "?", false, 'video');
-            playSmsReceived();
-            if (isHost) broadcast(data, conn);
-        }
-        else if (data.type === 'speaker-muted') {
-            var who = data.senderId ? data.senderId.substring(0,10) : "?";
-            var msg = data.muted ? '[' + who + '] Talkie coupe - appel seulement' : '[' + who + '] Talkie reactif';
-            addMessageToChat(msg, "Systeme", false);
-            if (isHost) broadcast(data, conn);
-        }
-    });
-
-    conn.on('close', function() {
-        connections = connections.filter(function(c){ return c !== conn; });
-        updateList();
-        statusEl.textContent = connections.length ? connections.length + " connecte(s)" : "Seul";
-    });
+function pressPercent() {
+  if (!input) return;
+  try {
+    const v = Function('"use strict";return(' + input + ')')();
+    input = (v / 100).toString();
+    updateDisplay(input);
+  } catch {}
 }
 
-// ===================== REJOINDRE =====================
-function joinRoom() {
-    var room = document.getElementById('roomName').value.trim();
-    if (!room) { statusEl.textContent = "Entre un code"; return; }
-    if (peer) {
-        connections.forEach(function(c){ try { c.close(); } catch(e){} });
-        peer.destroy(); connections = [];
-        if (localStream) { localStream.getTracks().forEach(function(t){ t.stop(); }); localStream = null; }
-    }
-    statusEl.textContent = "Connexion...";
-    peer = new Peer(room, {
-        debug: 0,
-        config: { iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" }
-        ]}
-    });
-    peer.on('open', function(id) {
-        myId = id; isHost = true;
-        statusEl.textContent = 'Hote - Code "' + room + '"';
-        updateList();
-    });
-    peer.on('connection', function(conn) { addConnection(conn); });
-    peer.on('call', function(call) { handleIncomingCall(call); });
-    peer.on('error', function(err) {
-        if (err.type === 'unavailable-id') {
-            statusEl.textContent = "Code pris > mode client";
-            var clientId = room + '_' + Math.random().toString(36).substr(2,6);
-            var newPeer = new Peer(clientId, { debug: 0, config: { iceServers: [{ urls:"stun:stun.l.google.com:19302" }] }});
-            newPeer.on('open', function(id) {
-                myId = id; isHost = false;
-                var connToHost = newPeer.connect(room);
-                addConnection(connToHost);
-                statusEl.textContent = 'Client - "' + room + '"';
-                peer = newPeer;
-            });
-            newPeer.on('call', function(call) { handleIncomingCall(call); });
-            newPeer.on('error', function() { statusEl.textContent = "Erreur connexion"; });
-            peer = newPeer;
-        } else {
-            statusEl.textContent = "Erreur : " + err.type;
-        }
-    });
+function backspace() {
+  if (justCalculated) { clearAll(); return; }
+  input = input.slice(0, -1);
+  lastWasOp = false; updateDisplay(input);
 }
 
-// ===================== TALKIE-WALKIE =====================
-async function startTalking() {
-    if (connections.length === 0) { statusEl.textContent = "Personne connecte"; return; }
-    if (!localStream || !localStream.getAudioTracks().length) {
-        try { localStream = await navigator.mediaDevices.getUserMedia({audio: true}); }
-        catch(e) { statusEl.textContent = "Micro inaccessible"; return; }
-    }
-    audioChunks = [];
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-    mediaRecorder = new MediaRecorder(localStream, {mimeType:'audio/webm'});
-    mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.start(100);
-    playTalkieStart();
+function clearAll() {
+  input = ""; lastWasOp = false; justCalculated = false;
+  updateDisplay(""); updateExpr("");
 }
 
-function stopTalking() {
-    if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-    mediaRecorder.onstop = function() {
-        if (audioChunks.length === 0) return;
-        var blob = new Blob(audioChunks, {type:'audio/webm'});
-        connections.forEach(function(conn) { if (conn.open) conn.send({type:'audio', blob:blob}); });
-        statusEl.textContent = "Envoye";
-        playTalkieEnd();
-        setTimeout(function() {
-            statusEl.textContent = connections.length ? connections.length + " connecte(s)" : "Seul";
-        }, 800);
-    };
-    mediaRecorder.stop();
+function toggleSign() {
+  if (!input) return;
+  input = input.startsWith("-") ? input.slice(1) : "-" + input;
+  updateDisplay(input);
 }
 
-var pressing = false;
-function onPress(e) {
-    e.preventDefault();
-    if (micLocked) return;
-    if (!pressing) { pressing = true; startTalking(); }
-}
-function onRelease(e) {
-    e.preventDefault();
-    if (micLocked) return;
-    if (pressing) { pressing = false; stopTalking(); }
-}
-talkBtn.addEventListener('pointerdown', onPress);
-talkBtn.addEventListener('pointerup', onRelease);
-talkBtn.addEventListener('pointerleave', onRelease);
-talkBtn.addEventListener('pointercancel', onRelease);
-
-// ===================== APPEL / VISIO =====================
-async function startCall(withVideo) {
-    withVideo = withVideo || false;
-    if (connections.length === 0) { statusEl.textContent = "Personne connecte"; return; }
-    isVideoCall = withVideo;
-    try {
-        var stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: withVideo ? { facingMode: 'user' } : false
-        });
-        localStream = stream;
-        if (withVideo) { localVideo.srcObject = stream; videoPanel.style.display = 'block'; }
-        var call = peer.call(connections[0].peer, stream);
-        setupCallHandlers(call, withVideo);
-        currentCall = call;
-        statusEl.textContent = withVideo ? "Visio en cours..." : "Appel en cours...";
-        callBtn.style.display = 'none';
-        videoBtn.style.display = 'none';
-        hangupBtn.style.display = '';
-    } catch(e) {
-        statusEl.textContent = "Camera/micro inaccessible";
-    }
+/* ══ PLUS + RESET COUNTER ══ */
+let plusCount = 0, plusTimer = null;
+function pressPlus() {
+  pressOp("+");
+  plusCount++;
+  clearTimeout(plusTimer);
+  if (plusCount >= 4) { plusCount = 0; resetCode(); return; }
+  plusTimer = setTimeout(() => { plusCount = 0; }, 2000);
 }
 
-function handleIncomingCall(call) {
-    pendingCall = call;
-    var isVideo = call.metadata && call.metadata.video;
-    callPopupTitle.textContent = isVideo ? "VISIO ENTRANT" : "APPEL ENTRANT";
-    callPopupSender.textContent = "De : " + call.peer.substring(0, 14);
-    callPopup.classList.add('open');
-    playCallRing();
+/* ══ SECRET CODE ══ */
+let savedCode = localStorage.getItem("calc_secret");
+if (!savedCode) {
+  const c = prompt("Choisis ton code secret :");
+  if (c && c.trim()) { localStorage.setItem("calc_secret", c.trim()); savedCode = c.trim(); }
+}
+function resetCode() {
+  localStorage.removeItem("calc_secret");
+  alert("Code réinitialisé !");
+  location.reload();
 }
 
-callAcceptBtn.addEventListener('click', async function() {
-    callPopup.classList.remove('open');
-    if (!pendingCall) return;
-    var call = pendingCall; pendingCall = null;
-    try {
-        var stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideoCall });
-        localStream = stream;
-        call.answer(stream);
-        setupCallHandlers(call, isVideoCall);
-        currentCall = call;
-        statusEl.textContent = "En communication";
-        callBtn.style.display = 'none';
-        videoBtn.style.display = 'none';
-        hangupBtn.style.display = '';
-    } catch(e) { statusEl.textContent = "Micro inaccessible"; }
-});
-
-callRejectBtn.addEventListener('click', function() {
-    callPopup.classList.remove('open');
-    if (pendingCall) { pendingCall.close(); pendingCall = null; }
-});
-
-function setupCallHandlers(call, withVideo) {
-    call.on('stream', function(remoteStream) {
-        remoteVideo.srcObject = remoteStream;
-        if (withVideo) { videoPanel.style.display = 'block'; localVideo.srcObject = localStream; }
-        statusEl.textContent = withVideo ? "Visio active" : "En communication";
-    });
-    call.on('close', function() { cleanupCall(); });
-    call.on('error', function() { cleanupCall(); statusEl.textContent = "Erreur appel"; });
+/* ══ CALCULATE ══ */
+function calculate() {
+  const code = localStorage.getItem("calc_secret");
+  if (code && input === code) { window.location.href = "app.html"; return; }
+  if (input === "0000") { resetCode(); return; }
+  if (!input) return;
+  try {
+    const clean = input.replace(/[^0-9+\-*/.()%]/g, "");
+    let result = Function('"use strict";return(' + clean + ')')();
+    if (!isFinite(result)) { updateDisplay("Erreur"); input = ""; return; }
+    result = parseFloat(result.toPrecision(12));
+    const expr = input.replace(/\./g, ",");
+    history.unshift({ expr: expr + " =", result: result.toString().replace(/\./g, ",") });
+    if (history.length > 50) history.pop();
+    localStorage.setItem("calc_history", JSON.stringify(history));
+    renderHistory();
+    updateExpr(expr + " =");
+    input = result.toString();
+    justCalculated = true; lastWasOp = false;
+    updateDisplay(input);
+  } catch { updateDisplay("Erreur"); input = ""; }
 }
 
-function hangup() { if (currentCall) currentCall.close(); cleanupCall(); }
+/* ══ HISTORY ══ */
+function renderHistory() {
+  const list = document.getElementById("history-list");
+  const empty = document.getElementById("history-empty");
+  const btn = document.getElementById("history-clear-btn");
+  if (!history.length) { empty.style.display="block"; btn.style.display="none"; list.innerHTML=""; return; }
+  empty.style.display = "none"; btn.style.display = "block";
+  list.innerHTML = history.map((h,i) => `
+    <div class="history-item" onclick="recallHistory(${i})">
+      <div class="history-expr">${h.expr}</div>
+      <div class="history-result">${h.result}</div>
+    </div>`).join("");
+}
+function recallHistory(i) {
+  input = history[i].result.replace(/,/g, ".");
+  justCalculated = true; updateDisplay(input); closePanel("panel-history");
+}
+function clearHistory() { history = []; localStorage.removeItem("calc_history"); renderHistory(); }
+renderHistory();
 
-function cleanupCall() {
-    currentCall = null;
-    remoteVideo.srcObject = null; localVideo.srcObject = null;
-    videoPanel.style.display = 'none';
-    if (localStream) { localStream.getTracks().forEach(function(t){ t.stop(); }); localStream = null; }
-    hangupBtn.style.display = 'none';
-    callBtn.style.display = ''; videoBtn.style.display = '';
-    statusEl.textContent = connections.length ? connections.length + " connecte(s)" : "Seul";
+/* ══ PANELS ══ */
+function openPanel(id)  { document.getElementById(id).classList.add("active"); }
+function closePanel(id) { document.getElementById(id).classList.remove("active"); }
+
+/* ══ CONVERTER ══ */
+const UNITS = {
+  length:  { m:"Mètre",km:"Kilomètre",cm:"Centimètre",mm:"Millimètre",mi:"Mile",yd:"Yard",ft:"Pied",in:"Pouce" },
+  weight:  { kg:"Kilogramme",g:"Gramme",mg:"Milligramme",lb:"Livre",oz:"Once",t:"Tonne" },
+  temp:    { C:"Celsius",F:"Fahrenheit",K:"Kelvin" },
+  area:    { m2:"m²",km2:"km²",cm2:"cm²",ha:"Hectare",ft2:"pied²",ac:"Acre" },
+  volume:  { L:"Litre",mL:"Millilitre",m3:"m³",gal:"Gallon (US)",qt:"Quart",fl_oz:"Fl. oz" },
+  speed:   { mps:"m/s",kmh:"km/h",mph:"mph",kn:"Nœud" },
+  time:    { s:"Seconde",min:"Minute",h:"Heure",d:"Jour",wk:"Semaine",mo:"Mois (30j)",yr:"Année" }
+};
+const TO_BASE = {
+  m:1,km:1000,cm:0.01,mm:0.001,mi:1609.344,yd:0.9144,ft:0.3048,in:0.0254,
+  kg:1,g:0.001,mg:1e-6,lb:0.453592,oz:0.028349,t:1000,
+  C:1,F:1,K:1,
+  m2:1,km2:1e6,cm2:1e-4,ha:10000,ft2:0.092903,ac:4046.86,
+  L:1,mL:0.001,m3:1000,gal:3.78541,qt:0.946353,fl_oz:0.029574,
+  mps:1,kmh:0.277778,mph:0.44704,kn:0.514444,
+  s:1,min:60,h:3600,d:86400,wk:604800,mo:2592000,yr:31536000
+};
+
+function convertVal(v, from, to, type) {
+  if (type === "temp") {
+    let c = from==="C" ? v : from==="F" ? (v-32)*5/9 : v-273.15;
+    return to==="C" ? c : to==="F" ? c*9/5+32 : c+273.15;
+  }
+  return v * TO_BASE[from] / TO_BASE[to];
 }
 
-// ===================== SMS =====================
-function sendTextMessage(content) {
-    if (!content.trim()) return;
-    if (connections.length === 0) { addMessageToChat("Personne connectee", "Systeme"); return; }
-    addMessageToChat(content, myId.substring(0,10), true);
-    playSmsSent();
-    var payload = { type:'text', text:content, senderId:myId, timestamp:Date.now() };
-    if (isHost) { broadcast(payload); }
-    else if (connections[0] && connections[0].open) { connections[0].send(payload); }
+function populateUnits() {
+  const type = document.getElementById("conv-type").value;
+  const units = UNITS[type];
+  const keys = Object.keys(units);
+  const fSel = document.getElementById("conv-from-sel");
+  const tSel = document.getElementById("conv-to-sel");
+  fSel.innerHTML = keys.map((k,i) => `<option value="${k}"${i===0?" selected":""}>${units[k]}</option>`).join("");
+  tSel.innerHTML = keys.map((k,i) => `<option value="${k}"${i===1?" selected":""}>${units[k]}</option>`).join("");
+  document.getElementById("conv-from-unit").textContent = units[keys[0]];
+  document.getElementById("conv-to-unit").textContent   = units[keys[1]];
 }
 
-function handleSendSms() {
-    var msg = smsInput.value.trim();
-    if (msg) { sendTextMessage(msg); smsInput.value = ""; }
+function initConverter() { populateUnits(); convertFrom(); }
+
+function onFromSelChange() {
+  const type = document.getElementById("conv-type").value;
+  document.getElementById("conv-from-unit").textContent = UNITS[type][document.getElementById("conv-from-sel").value];
+  convertFrom();
 }
-sendSmsBtn.addEventListener('click', handleSendSms);
-smsInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); handleSendSms(); } });
 
-// ===================== PHOTO / VIDEO =====================
-mediaPickerBtn.addEventListener('click', function() { fileInput.click(); });
+function convertFrom() {
+  const type = document.getElementById("conv-type").value;
+  const from = document.getElementById("conv-from-sel").value;
+  const to   = document.getElementById("conv-to-sel").value;
+  document.getElementById("conv-to-unit").textContent = UNITS[type][to];
+  const v = parseFloat(document.getElementById("conv-from-val").value);
+  if (isNaN(v)) return;
+  const r = convertVal(v, from, to, type);
+  document.getElementById("conv-to-val").value = parseFloat(r.toPrecision(8));
+}
 
-fileInput.addEventListener('change', function() {
-    var file = fileInput.files[0];
-    if (!file) return;
-    if (connections.length === 0) { addMessageToChat("Personne connectee", "Systeme"); return; }
-    var MAX_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-        addMessageToChat("Fichier trop lourd (max 5 Mo)", "Systeme", true);
-        fileInput.value = ''; return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var dataUrl = e.target.result;
-        var type = file.type.startsWith('image/') ? 'image' : 'video';
-        addMessageToChat(dataUrl, myId.substring(0,10), true, type);
-        playSmsSent();
-        var payload = { type:type, dataUrl:dataUrl, senderId:myId, timestamp:Date.now() };
-        if (isHost) { broadcast(payload); }
-        else if (connections[0] && connections[0].open) { connections[0].send(payload); }
-    };
-    reader.readAsDataURL(file);
-    fileInput.value = '';
-});
+function swapUnits() {
+  const fSel = document.getElementById("conv-from-sel");
+  const tSel = document.getElementById("conv-to-sel");
+  const tmp = fSel.value; fSel.value = tSel.value; tSel.value = tmp;
+  const type = document.getElementById("conv-type").value;
+  document.getElementById("conv-from-unit").textContent = UNITS[type][fSel.value];
+  document.getElementById("conv-to-unit").textContent   = UNITS[type][tSel.value];
+  const fVal = document.getElementById("conv-from-val").value;
+  const tVal = document.getElementById("conv-to-val").value;
+  document.getElementById("conv-from-val").value = tVal;
+  convertFrom();
+}
 
-// ===================== NETTOYAGE =====================
-window.joinRoom = joinRoom;
-window.addEventListener('beforeunload', function() {
-    if (localStream) localStream.getTracks().forEach(function(t){ t.stop(); });
-    if (peer) peer.destroy();
+/* ══ FORMULA ══ */
+function useFormula(f) { input = f; justCalculated = false; updateDisplay(input); closePanel("panel-formula"); }
+
+/* ══ KEYBOARD ══ */
+document.addEventListener("keydown", e => {
+  if (document.querySelector(".panel.active")) return;
+  if (e.key >= "0" && e.key <= "9") pressNum(e.key);
+  else if (e.key === "+") pressPlus();
+  else if (e.key === "-") pressOp("-");
+  else if (e.key === "*") pressOp("*");
+  else if (e.key === "/") { e.preventDefault(); pressOp("/"); }
+  else if (e.key === "." || e.key === ",") pressDecimal();
+  else if (e.key === "%" ) pressPercent();
+  else if (e.key === "(" || e.key === ")") pressParen();
+  else if (e.key === "Enter" || e.key === "=") calculate();
+  else if (e.key === "Backspace") backspace();
+  else if (e.key === "Escape") clearAll();
 });
 </script>
 </body>
