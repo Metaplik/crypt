@@ -2,599 +2,777 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Calculatrice</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
 
-body {
-  background:#000;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  font-family:'Helvetica Neue', Arial, sans-serif;
-  overflow:hidden;
-  max-width:430px;
-  margin:0 auto;
+/* ─── RESET ─── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-/* ── PANELS ── */
+/* ─── ROOT ─── */
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+/* ─── WRAPPER : tient dans l'écran visible du navigateur ─── */
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100svh;           /* small viewport = exclut barre nav Chrome */
+  max-width: 480px;
+  margin: 0 auto;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════
+   PANELS (historique / convertisseur / formules)
+══════════════════════════════════════ */
 .panel {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#000;
-  z-index:100;
-  flex-direction:column;
-  max-width:430px;
-  margin:0 auto;
+  display: none;
+  position: fixed;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  height: 100svh;
+  background: #000;
+  z-index: 200;
+  flex-direction: column;
+  overflow: hidden;
 }
-.panel.active { display:flex; }
+.panel.open { display: flex; }
 
-.panel-header {
-  display:flex;
-  align-items:center;
-  padding:20px 16px 14px;
-  border-bottom:1px solid #1f1f1f;
+.panel-head {
+  display: flex;
+  align-items: center;
+  padding: 18px 14px 12px;
+  border-bottom: 1px solid #1c1c1c;
+  flex-shrink: 0;
 }
-.panel-title { color:#fff; font-size:19px; font-weight:400; flex:1; }
-.panel-close {
-  background:none; border:none; color:#888;
-  font-size:22px; cursor:pointer;
-  width:40px; height:40px;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:50%;
+.panel-head h2 {
+  flex: 1;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 400;
 }
-.panel-close:active { background:rgba(255,255,255,0.08); }
-.panel-body { flex:1; overflow-y:auto; padding:16px; }
+.panel-head button {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 20px;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.panel-head button:active { background: rgba(255,255,255,.08); }
 
-/* HISTORY */
-.history-empty { color:#555; text-align:center; margin-top:60px; font-size:15px; }
-.history-item {
-  padding:14px 4px; border-bottom:1px solid #1a1a1a;
-  text-align:right; cursor:pointer; border-radius:8px;
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  -webkit-overflow-scrolling: touch;
 }
-.history-item:active { background:rgba(255,255,255,0.05); }
-.history-expr { color:#666; font-size:14px; margin-bottom:4px; }
-.history-result { color:#fff; font-size:24px; font-weight:300; }
-.history-clear-btn {
-  background:none; border:1px solid #2a2a2a; color:#888;
-  padding:10px 20px; border-radius:20px; font-size:14px;
-  cursor:pointer; margin-top:16px; width:100%;
-}
-.history-clear-btn:active { background:#1a1a1a; }
 
-/* CONVERTER */
-.conv-cat-label { color:#888; font-size:12px; letter-spacing:0.5px; margin-bottom:8px; }
-.converter-select {
-  background:#1c1c1c; border:none; color:#fff; font-size:15px;
-  padding:12px 14px; border-radius:12px; width:100%; margin-bottom:14px;
-  outline:none; appearance:none; -webkit-appearance:none; cursor:pointer;
+/* ── Historique ── */
+.hist-empty { color: #444; text-align: center; margin-top: 50px; font-size: 14px; }
+.hist-item {
+  padding: 12px 4px;
+  border-bottom: 1px solid #181818;
+  text-align: right;
+  cursor: pointer;
 }
-.conv-row { display:flex; gap:10px; margin-bottom:12px; align-items:stretch; }
-.conv-input-wrap {
-  flex:1; background:#1c1c1c; border-radius:12px; padding:12px 14px;
+.hist-item:active { background: rgba(255,255,255,.04); border-radius: 8px; }
+.hist-expr   { color: #555; font-size: 13px; margin-bottom: 3px; }
+.hist-result { color: #fff; font-size: 22px; font-weight: 300; }
+.hist-clear  {
+  display: none;
+  width: 100%; margin-top: 14px;
+  background: none; border: 1px solid #2a2a2a;
+  color: #777; font-size: 13px;
+  padding: 9px; border-radius: 20px; cursor: pointer;
 }
-.conv-label { color:#666; font-size:11px; margin-bottom:4px; }
-.conv-input {
-  background:none; border:none; color:#fff;
-  font-size:22px; font-weight:300; width:100%; outline:none;
-}
-.conv-unit { color:#43a047; font-size:12px; margin-top:3px; }
-.conv-swap {
-  background:none; border:none; color:#43a047; font-size:22px;
-  cursor:pointer; width:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.conv-selects { display:flex; gap:10px; }
-.conv-selects .converter-select { flex:1; }
+.hist-clear:active { background: #1a1a1a; }
 
-/* FORMULA */
-.formula-cat-title {
-  color:#43a047; font-size:12px; font-weight:600;
-  letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;
+/* ── Convertisseur ── */
+.conv-label-sm { color: #666; font-size: 11px; letter-spacing: .4px; margin-bottom: 6px; }
+.conv-sel {
+  width: 100%; background: #181818; border: none;
+  color: #fff; font-size: 14px;
+  padding: 11px 12px; border-radius: 10px;
+  margin-bottom: 12px; outline: none;
+  appearance: none; -webkit-appearance: none;
 }
-.formula-category { margin-bottom:20px; }
-.formula-item {
-  background:#1c1c1c; border-radius:12px;
-  padding:13px 14px; margin-bottom:8px; cursor:pointer;
+.conv-row { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
+.conv-box {
+  flex: 1; background: #181818;
+  border-radius: 10px; padding: 10px 12px;
 }
-.formula-item:active { background:#242424; }
-.formula-name { color:#fff; font-size:15px; margin-bottom:4px; }
-.formula-eq { color:#43a047; font-size:13px; font-family:monospace; }
+.conv-box label { display: block; color: #555; font-size: 10px; margin-bottom: 3px; }
+.conv-box input {
+  width: 100%; background: none; border: none;
+  color: #fff; font-size: 20px; font-weight: 300; outline: none;
+}
+.conv-box .unit { color: #4caf50; font-size: 11px; margin-top: 2px; }
+.conv-swap-btn {
+  background: none; border: none;
+  color: #4caf50; font-size: 20px;
+  cursor: pointer; width: 36px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.conv-pair { display: flex; gap: 8px; }
+.conv-pair .conv-sel { margin-bottom: 0; }
 
-/* ── MAIN ── */
-.display-area {
-  flex:1; display:flex; flex-direction:column;
-  justify-content:flex-end; padding:0 20px 4px;
-  min-height:160px;
+/* ── Formules ── */
+.fcat-title {
+  color: #4caf50; font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin: 16px 0 8px;
 }
-.display-expr { color:#555; font-size:15px; text-align:right; min-height:20px; word-break:break-all; margin-bottom:2px; }
+.fcat-title:first-child { margin-top: 0; }
+.fitem {
+  background: #181818; border-radius: 10px;
+  padding: 12px; margin-bottom: 7px; cursor: pointer;
+}
+.fitem:active { background: #202020; }
+.fitem-name { color: #fff; font-size: 14px; margin-bottom: 3px; }
+.fitem-eq   { color: #4caf50; font-size: 12px; font-family: monospace; }
+
+/* ══════════════════════════════════════
+   CALCULATRICE PRINCIPALE
+══════════════════════════════════════ */
+
+/* Zone affichage */
+.display-zone {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8px 18px 4px;
+  height: 22svh;
+  min-height: 100px;
+  max-height: 160px;
+}
+.display-expr {
+  color: #444;
+  font-size: 13px;
+  text-align: right;
+  min-height: 18px;
+  word-break: break-all;
+}
 #display {
-  color:#fff; font-size:64px; font-weight:200;
-  text-align:right; word-break:break-all; line-height:1.1;
-  letter-spacing:-2px; padding-bottom:4px;
+  font-size: 52px;
+  font-weight: 300;
+  color: #fff;
+  text-align: right;
+  word-break: break-all;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  /* couleur animée */
+  transition: color .15s;
 }
+#display.green { color: #4caf50; }
 
-/* ── TOOLBAR ── */
+/* Barre outils */
 .toolbar {
-  display:flex; align-items:center;
-  padding:4px 12px 12px;
+  display: flex;
+  align-items: center;
+  padding: 2px 10px 6px;
+  flex-shrink: 0;
 }
-.tb-btn {
-  background:none; border:none; cursor:pointer;
-  width:50px; height:42px;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:10px;
+.tb {
+  background: none; border: none;
+  cursor: pointer;
+  width: 46px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
 }
-.tb-btn:active { background:rgba(255,255,255,0.07); }
+.tb:active { background: rgba(255,255,255,.07); }
+.tb svg { width: 21px; height: 21px; }
+.tb-space { flex: 1; }
 
-/* Clock SVG */
-.tb-btn svg { width:22px; height:22px; }
-.ico-grey { fill:none; stroke:#666; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-.ico-green { fill:none; stroke:#43a047; stroke-width:1.8; stroke-linecap:round; }
+/* Séparateur */
+.sep { height: 1px; background: #1c1c1c; flex-shrink: 0; }
 
-.tb-spacer { flex:1; }
-
-/* ── DIVIDER ── */
-.divider { height:1px; background:#1e1e1e; }
-
-/* ── BUTTONS ── */
-.buttons {
-  padding:12px 10px 16px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:9px;
+/* Grille boutons */
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 7px;
+  padding: 8px 8px 10px;
+  /* empêche la grille de déborder */
+  overflow: hidden;
 }
 
+/* ── Bouton de base ── */
 .btn {
-  aspect-ratio:1/1;
-  border-radius:50%;
-  border:none;
-  font-size:26px;
-  font-weight:400;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  outline:none;
-  position:relative;
-  -webkit-appearance:none;
-  appearance:none;
-  background-image:none;
-  box-shadow:none;
+  /* Parfaitement rond : on force width = height via aspect-ratio */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* PAS d'effet verre, pas de box-shadow, pas de gradient */
+  background: #1c1c1c;
+  color: #fff;
+  /* transition légère au clic */
+  transition: transform .08s, filter .08s;
+  /* on s'assure qu'aucun style système ne vient s'ajouter */
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+  background-image: none;
 }
-.btn:active { transform:scale(0.89); }
+.btn:active {
+  transform: scale(0.88);
+  filter: brightness(1.35);
+}
 
-/* No glass — flat solid backgrounds only */
-.btn.num    { background:#1c1c1c; color:#fff; }
-.btn.func   { background:#282828; color:#fff; }
-.btn.func.clear   { color:#e05555; }
-.btn.func.green   { color:#43a047; }
-.btn.op     { background:#1c1c1c; color:#43a047; }
-.btn.equals { background:#43a047; color:#000; font-weight:500; font-size:30px; }
+/* Ligne 1 : C ( ) ÷  → fond légèrement plus clair */
+.btn.fn   { background: #272727; }
+.btn.red  { color: #e05050; }
+.btn.grn  { color: #4caf50; }    /* ( ) et % */
+
+/* Opérateurs (÷ × − +) */
+.btn.op { color: #4caf50; }
+
+/* Touche = */
+.btn.eq {
+  background: #4caf50;
+  color: #000;
+  font-size: 26px;
+  font-weight: 600;
+}
+
 </style>
 </head>
 <body>
 
-<!-- HISTORY PANEL -->
-<div class="panel" id="panel-history">
-  <div class="panel-header">
-    <span class="panel-title">Historique</span>
-    <button class="panel-close" onclick="closePanel('panel-history')">✕</button>
+<!-- ══════════════════════════
+     PANEL HISTORIQUE
+══════════════════════════ -->
+<div class="panel" id="ph">
+  <div class="panel-head">
+    <h2>Historique</h2>
+    <button onclick="closePanel('ph')">✕</button>
   </div>
   <div class="panel-body">
-    <div class="history-empty" id="history-empty">Aucun historique</div>
-    <div id="history-list"></div>
-    <button class="history-clear-btn" id="history-clear-btn" style="display:none" onclick="clearHistory()">Effacer l'historique</button>
+    <p class="hist-empty" id="he">Aucun calcul enregistré</p>
+    <div id="hl"></div>
+    <button class="hist-clear" id="hcb" onclick="clearHist()">Effacer l'historique</button>
   </div>
 </div>
 
-<!-- CONVERTER PANEL -->
-<div class="panel" id="panel-converter">
-  <div class="panel-header">
-    <span class="panel-title">Convertisseur d'unités</span>
-    <button class="panel-close" onclick="closePanel('panel-converter')">✕</button>
+<!-- ══════════════════════════
+     PANEL CONVERTISSEUR
+══════════════════════════ -->
+<div class="panel" id="pc">
+  <div class="panel-head">
+    <h2>Convertisseur</h2>
+    <button onclick="closePanel('pc')">✕</button>
   </div>
   <div class="panel-body">
-    <div class="conv-cat-label">CATÉGORIE</div>
-    <select class="converter-select" id="conv-type" onchange="initConverter()">
+    <div class="conv-label-sm">CATÉGORIE</div>
+    <select class="conv-sel" id="ctype" onchange="initConv()">
       <option value="length">Longueur</option>
-      <option value="weight">Poids / Masse</option>
+      <option value="mass">Masse</option>
       <option value="temp">Température</option>
       <option value="area">Surface</option>
-      <option value="volume">Volume</option>
+      <option value="vol">Volume</option>
       <option value="speed">Vitesse</option>
       <option value="time">Temps</option>
     </select>
 
     <div class="conv-row">
-      <div class="conv-input-wrap">
-        <div class="conv-label">DE</div>
-        <input class="conv-input" id="conv-from-val" type="number" value="1" oninput="convertFrom()">
-        <div class="conv-unit" id="conv-from-unit"></div>
+      <div class="conv-box">
+        <label>DE</label>
+        <input id="cv1" type="number" value="1" oninput="doConv(1)">
+        <div class="unit" id="cu1"></div>
       </div>
-      <button class="conv-swap" onclick="swapUnits()" title="Inverser">⇄</button>
-      <div class="conv-input-wrap">
-        <div class="conv-label">VERS</div>
-        <input class="conv-input" id="conv-to-val" type="number" readonly>
-        <div class="conv-unit" id="conv-to-unit"></div>
+      <button class="conv-swap-btn" onclick="swapConv()">⇄</button>
+      <div class="conv-box">
+        <label>VERS</label>
+        <input id="cv2" type="number" readonly>
+        <div class="unit" id="cu2"></div>
       </div>
     </div>
 
-    <div class="conv-selects">
-      <select class="converter-select" id="conv-from-sel" onchange="onFromSelChange()"></select>
-      <select class="converter-select" id="conv-to-sel"   onchange="convertFrom()"></select>
+    <div class="conv-pair">
+      <select class="conv-sel" id="cs1" onchange="onCS1()"></select>
+      <select class="conv-sel" id="cs2" onchange="doConv(1)"></select>
     </div>
   </div>
 </div>
 
-<!-- FORMULA PANEL -->
-<div class="panel" id="panel-formula">
-  <div class="panel-header">
-    <span class="panel-title">Formules</span>
-    <button class="panel-close" onclick="closePanel('panel-formula')">✕</button>
+<!-- ══════════════════════════
+     PANEL FORMULES
+══════════════════════════ -->
+<div class="panel" id="pf">
+  <div class="panel-head">
+    <h2>Formules</h2>
+    <button onclick="closePanel('pf')">✕</button>
   </div>
   <div class="panel-body">
-    <div class="formula-category">
-      <div class="formula-cat-title">Géométrie</div>
-      <div class="formula-item" onclick="useFormula('3.14159265*r*r')">
-        <div class="formula-name">Aire d'un cercle</div>
-        <div class="formula-eq">A = π × r²</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('2*3.14159265*r')">
-        <div class="formula-name">Périmètre d'un cercle</div>
-        <div class="formula-eq">P = 2π × r</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('(b*h)/2')">
-        <div class="formula-name">Aire d'un triangle</div>
-        <div class="formula-eq">A = (b × h) / 2</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('l*l')">
-        <div class="formula-name">Aire d'un carré</div>
-        <div class="formula-eq">A = l²</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('l*w')">
-        <div class="formula-name">Aire d'un rectangle</div>
-        <div class="formula-eq">A = l × w</div>
-      </div>
+    <div class="fcat-title">Géométrie</div>
+    <div class="fitem" onclick="insFormula('3.14159265*r*r')">
+      <div class="fitem-name">Aire d'un cercle</div>
+      <div class="fitem-eq">A = π × r²</div>
     </div>
-    <div class="formula-category">
-      <div class="formula-cat-title">Physique</div>
-      <div class="formula-item" onclick="useFormula('m*v')">
-        <div class="formula-name">Quantité de mouvement</div>
-        <div class="formula-eq">p = m × v</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('m*9.81*h')">
-        <div class="formula-name">Énergie potentielle</div>
-        <div class="formula-eq">Ep = m × g × h</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('0.5*m*v*v')">
-        <div class="formula-name">Énergie cinétique</div>
-        <div class="formula-eq">Ec = ½ × m × v²</div>
-      </div>
+    <div class="fitem" onclick="insFormula('2*3.14159265*r')">
+      <div class="fitem-name">Périmètre d'un cercle</div>
+      <div class="fitem-eq">P = 2π × r</div>
     </div>
-    <div class="formula-category">
-      <div class="formula-cat-title">Mathématiques</div>
-      <div class="formula-item" onclick="useFormula('n*(n+1)/2')">
-        <div class="formula-name">Somme de 1 à n</div>
-        <div class="formula-eq">S = n(n+1)/2</div>
-      </div>
-      <div class="formula-item" onclick="useFormula('(a+b)*(a+b)')">
-        <div class="formula-name">Carré d'une somme</div>
-        <div class="formula-eq">(a+b)²</div>
-      </div>
+    <div class="fitem" onclick="insFormula('(b*h)/2')">
+      <div class="fitem-name">Aire d'un triangle</div>
+      <div class="fitem-eq">A = (b × h) / 2</div>
+    </div>
+    <div class="fitem" onclick="insFormula('l*w')">
+      <div class="fitem-name">Aire d'un rectangle</div>
+      <div class="fitem-eq">A = l × w</div>
+    </div>
+    <div class="fitem" onclick="insFormula('l*l')">
+      <div class="fitem-name">Aire d'un carré</div>
+      <div class="fitem-eq">A = l²</div>
+    </div>
+
+    <div class="fcat-title">Physique</div>
+    <div class="fitem" onclick="insFormula('m*v')">
+      <div class="fitem-name">Quantité de mouvement</div>
+      <div class="fitem-eq">p = m × v</div>
+    </div>
+    <div class="fitem" onclick="insFormula('0.5*m*v*v')">
+      <div class="fitem-name">Énergie cinétique</div>
+      <div class="fitem-eq">Ec = ½mv²</div>
+    </div>
+    <div class="fitem" onclick="insFormula('m*9.81*h')">
+      <div class="fitem-name">Énergie potentielle</div>
+      <div class="fitem-eq">Ep = mgh</div>
+    </div>
+
+    <div class="fcat-title">Mathématiques</div>
+    <div class="fitem" onclick="insFormula('n*(n+1)/2')">
+      <div class="fitem-name">Somme de 1 à n</div>
+      <div class="fitem-eq">S = n(n+1)/2</div>
+    </div>
+    <div class="fitem" onclick="insFormula('(a+b)*(a+b)')">
+      <div class="fitem-name">Carré d'une somme</div>
+      <div class="fitem-eq">(a+b)²</div>
     </div>
   </div>
 </div>
 
-<!-- MAIN CALCULATOR -->
-<div class="display-area">
-  <div class="display-expr" id="display-expr"></div>
-  <div id="display">0</div>
-</div>
+<!-- ══════════════════════════
+     CALCULATRICE
+══════════════════════════ -->
+<div id="app">
 
-<div class="toolbar">
-  <!-- History (clock) -->
-  <button class="tb-btn" onclick="openPanel('panel-history')" title="Historique">
-    <svg viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" class="ico-grey"/>
-      <polyline points="12,7 12,12 15,15" class="ico-grey"/>
-    </svg>
-  </button>
+  <!-- Affichage -->
+  <div class="display-zone">
+    <div class="display-expr" id="dexpr"></div>
+    <div id="display">0</div>
+  </div>
 
-  <!-- Converter (ruler) -->
-  <button class="tb-btn" onclick="openPanel('panel-converter'); initConverter();" title="Convertisseur">
-    <svg viewBox="0 0 24 24">
-      <rect x="2" y="8" width="20" height="8" rx="1.5" class="ico-grey"/>
-      <line x1="5"  y1="8"  x2="5"  y2="12" class="ico-grey"/>
-      <line x1="8"  y1="8"  x2="8"  y2="11" class="ico-grey"/>
-      <line x1="11" y1="8"  x2="11" y2="12" class="ico-grey"/>
-      <line x1="14" y1="8"  x2="14" y2="11" class="ico-grey"/>
-      <line x1="17" y1="8"  x2="17" y2="12" class="ico-grey"/>
-      <line x1="20" y1="8"  x2="20" y2="11" class="ico-grey"/>
-    </svg>
-  </button>
+  <!-- Barre outils -->
+  <div class="toolbar">
 
-  <!-- Formula (f(x) box) -->
-  <button class="tb-btn" onclick="openPanel('panel-formula')" title="Formules">
-    <svg viewBox="0 0 24 24">
-      <rect x="3" y="3" width="18" height="18" rx="2" class="ico-grey"/>
-      <text x="12" y="15.5" text-anchor="middle" font-size="8" font-family="monospace" fill="#666" style="font-style:italic">f(x)</text>
-    </svg>
-  </button>
+    <!-- Horloge = Historique -->
+    <button class="tb" onclick="openPanel('ph')" title="Historique">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12,7 12,12 15,15"/>
+      </svg>
+    </button>
 
-  <div class="tb-spacer"></div>
+    <!-- Règle = Convertisseur -->
+    <button class="tb" onclick="openPanel('pc'); initConv();" title="Convertisseur">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="10" rx="1.5"/>
+        <line x1="6"  y1="7" x2="6"  y2="12"/>
+        <line x1="9"  y1="7" x2="9"  y2="11"/>
+        <line x1="12" y1="7" x2="12" y2="12"/>
+        <line x1="15" y1="7" x2="15" y2="11"/>
+        <line x1="18" y1="7" x2="18" y2="12"/>
+      </svg>
+    </button>
 
-  <!-- Backspace -->
-  <button class="tb-btn" onclick="backspace()" title="Effacer">
-    <svg viewBox="0 0 24 24">
-      <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" class="ico-green"/>
-      <line x1="15" y1="9" x2="9"  y2="15" class="ico-green"/>
-      <line x1="9"  y1="9" x2="15" y2="15" class="ico-green"/>
-    </svg>
-  </button>
-</div>
+    <!-- Carré fx = Formules -->
+    <button class="tb" onclick="openPanel('pf')" title="Formules">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <text x="12" y="15" text-anchor="middle" font-size="7.5" font-family="monospace"
+              fill="#666" stroke="none" font-style="italic">f(x)</text>
+      </svg>
+    </button>
 
-<div class="divider"></div>
+    <div class="tb-space"></div>
 
-<div class="buttons">
-  <button class="btn func clear" onclick="clearAll()">C</button>
-  <button class="btn func green" onclick="pressParen()">( )</button>
-  <button class="btn func green" onclick="pressPercent()">%</button>
-  <button class="btn op"         onclick="pressOp('/')">÷</button>
+    <!-- Backspace -->
+    <button class="tb" onclick="doBksp()" title="Effacer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 4H8L2 12l6 8h13a1 1 0 001-1V5a1 1 0 00-1-1z"/>
+        <line x1="15" y1="9" x2="9"  y2="15"/>
+        <line x1="9"  y1="9" x2="15" y2="15"/>
+      </svg>
+    </button>
+  </div>
 
-  <button class="btn num" onclick="pressNum('7')">7</button>
-  <button class="btn num" onclick="pressNum('8')">8</button>
-  <button class="btn num" onclick="pressNum('9')">9</button>
-  <button class="btn op"  onclick="pressOp('*')">×</button>
+  <div class="sep"></div>
 
-  <button class="btn num" onclick="pressNum('4')">4</button>
-  <button class="btn num" onclick="pressNum('5')">5</button>
-  <button class="btn num" onclick="pressNum('6')">6</button>
-  <button class="btn op"  onclick="pressOp('-')">−</button>
+  <!-- Grille -->
+  <div class="grid">
+    <!-- ligne 1 -->
+    <button class="btn fn red"  onclick="doClear()">C</button>
+    <button class="btn fn grn"  onclick="doParen()">( )</button>
+    <button class="btn fn grn"  onclick="doPct()">%</button>
+    <button class="btn fn grn op" onclick="doOp('/')">÷</button>
 
-  <button class="btn num" onclick="pressNum('1')">1</button>
-  <button class="btn num" onclick="pressNum('2')">2</button>
-  <button class="btn num" onclick="pressNum('3')">3</button>
-  <button class="btn op"  onclick="pressPlus()">+</button>
+    <!-- ligne 2 -->
+    <button class="btn" onclick="doNum('7')">7</button>
+    <button class="btn" onclick="doNum('8')">8</button>
+    <button class="btn" onclick="doNum('9')">9</button>
+    <button class="btn op" onclick="doOp('*')">×</button>
 
-  <button class="btn num" onclick="toggleSign()">+/−</button>
-  <button class="btn num" onclick="pressNum('0')">0</button>
-  <button class="btn num" onclick="pressDecimal()">,</button>
-  <button class="btn equals" onclick="calculate()">=</button>
-</div>
+    <!-- ligne 3 -->
+    <button class="btn" onclick="doNum('4')">4</button>
+    <button class="btn" onclick="doNum('5')">5</button>
+    <button class="btn" onclick="doNum('6')">6</button>
+    <button class="btn op" onclick="doOp('-')">−</button>
+
+    <!-- ligne 4 -->
+    <button class="btn" onclick="doNum('1')">1</button>
+    <button class="btn" onclick="doNum('2')">2</button>
+    <button class="btn" onclick="doNum('3')">3</button>
+    <button class="btn op" onclick="doPlus()">+</button>
+
+    <!-- ligne 5 -->
+    <button class="btn" onclick="doSign()">+/−</button>
+    <button class="btn" onclick="doNum('0')">0</button>
+    <button class="btn" onclick="doDot()">,</button>
+    <button class="btn eq" onclick="doCalc()">=</button>
+  </div>
+
+</div><!-- #app -->
 
 <script>
-/* ══ STATE ══ */
-let input = "";
-let lastWasOp = false;
-let justCalculated = false;
-let history = JSON.parse(localStorage.getItem("calc_history") || "[]");
+/* ════════════════════════════════════
+   ÉTAT
+════════════════════════════════════ */
+let expr        = "";          // expression en cours
+let lastOp      = false;       // dernier char est un opérateur
+let justCalc    = false;       // vient de calculer
+let hist        = JSON.parse(localStorage.getItem("ch") || "[]");
 
-/* ══ DISPLAY ══ */
-function updateDisplay(val) {
-  const el = document.getElementById("display");
-  const str = (!val || val === "") ? "0" : val;
-  const digits = str.replace(/[^0-9]/g, "").length;
-  el.style.fontSize = digits > 13 ? "30px" : digits > 10 ? "42px" : digits > 7 ? "52px" : "64px";
-  el.textContent = str.replace(/\./g, ",");
-}
-function updateExpr(v) { document.getElementById("display-expr").textContent = v; }
+/* ════════════════════════════════════
+   AFFICHAGE
+════════════════════════════════════ */
+const dEl   = document.getElementById("display");
+const dExpr = document.getElementById("dexpr");
 
-/* ══ INPUT ══ */
-function pressNum(v) {
-  if (justCalculated) { input = ""; justCalculated = false; updateExpr(""); }
-  input += v; lastWasOp = false; updateDisplay(input);
-}
-
-function pressDecimal() {
-  if (justCalculated) { input = "0"; justCalculated = false; updateExpr(""); }
-  const parts = input.split(/[+\-*/]/);
-  if (parts[parts.length-1].includes(".")) return;
-  if (!input || lastWasOp) input += "0";
-  input += "."; lastWasOp = false; updateDisplay(input);
+function setDisplay(txt, green) {
+  // taille adaptative
+  const n = txt.replace(/[^0-9]/g,"").length;
+  dEl.style.fontSize = n > 14 ? "26px" : n > 11 ? "34px" : n > 8 ? "44px" : "52px";
+  dEl.textContent = txt.replace(/\./g, ",");
+  // couleur
+  if (green) {
+    dEl.classList.add("green");
+  } else {
+    dEl.classList.remove("green");
+  }
 }
 
-function pressOp(op) {
-  justCalculated = false;
-  if (input === "" && op !== "-") return;
-  if (lastWasOp) input = input.slice(0, -1);
-  input += op; lastWasOp = true; updateDisplay(input);
+function setExpr(txt) { dExpr.textContent = txt; }
+
+/* ════════════════════════════════════
+   SAISIE CHIFFRES
+════════════════════════════════════ */
+function doNum(v) {
+  if (justCalc) { expr = ""; justCalc = false; setExpr(""); }
+  expr += v;
+  lastOp = false;
+  setDisplay(expr, false);
 }
 
-function pressParen() {
-  if (justCalculated) { input = ""; justCalculated = false; }
-  const o = (input.match(/\(/g)||[]).length;
-  const c = (input.match(/\)/g)||[]).length;
-  input += (o > c) ? ")" : "(";
-  lastWasOp = false; updateDisplay(input);
+function doDot() {
+  if (justCalc) { expr = "0"; justCalc = false; setExpr(""); }
+  // Trouve le dernier segment numérique
+  const seg = expr.split(/[+\-*/]/).pop();
+  if (seg.includes(".")) return;
+  if (!expr || lastOp) expr += "0";
+  expr += ".";
+  lastOp = false;
+  setDisplay(expr, false);
 }
 
-function pressPercent() {
-  if (!input) return;
+/* ════════════════════════════════════
+   OPÉRATEURS
+════════════════════════════════════ */
+function doOp(op) {
+  justCalc = false;
+  if (expr === "" && op !== "-") return;
+  if (lastOp) expr = expr.slice(0, -1);
+  expr += op;
+  lastOp = true;
+  setDisplay(expr, false);
+}
+
+/* ════════════════════════════════════
+   PLUS  (+ compteur reset ×4)
+════════════════════════════════════ */
+let plusCnt = 0, plusT = null;
+function doPlus() {
+  doOp("+");
+  plusCnt++;
+  clearTimeout(plusT);
+  if (plusCnt >= 4) { plusCnt = 0; resetSecret(); return; }
+  plusT = setTimeout(() => plusCnt = 0, 2000);
+}
+
+/* ════════════════════════════════════
+   PARENTHÈSES
+════════════════════════════════════ */
+function doParen() {
+  if (justCalc) { expr = ""; justCalc = false; }
+  const o = (expr.match(/\(/g)||[]).length;
+  const c = (expr.match(/\)/g)||[]).length;
+  expr += (o > c) ? ")" : "(";
+  lastOp = false;
+  setDisplay(expr, false);
+}
+
+/* ════════════════════════════════════
+   POURCENTAGE
+════════════════════════════════════ */
+function doPct() {
+  if (!expr) return;
   try {
-    const v = Function('"use strict";return(' + input + ')')();
-    input = (v / 100).toString();
-    updateDisplay(input);
+    const v = Function('"use strict";return(' + expr + ')')();
+    expr = (v / 100).toString();
+    setDisplay(expr, false);
   } catch {}
 }
 
-function backspace() {
-  if (justCalculated) { clearAll(); return; }
-  input = input.slice(0, -1);
-  lastWasOp = false; updateDisplay(input);
+/* ════════════════════════════════════
+   EFFACER / BACKSPACE
+════════════════════════════════════ */
+function doClear() {
+  expr = ""; lastOp = false; justCalc = false;
+  setDisplay("", false); setExpr("");
+}
+function doBksp() {
+  if (justCalc) { doClear(); return; }
+  expr = expr.slice(0, -1);
+  lastOp = false;
+  setDisplay(expr, false);
 }
 
-function clearAll() {
-  input = ""; lastWasOp = false; justCalculated = false;
-  updateDisplay(""); updateExpr("");
+/* ════════════════════════════════════
+   SIGNE +/−
+════════════════════════════════════ */
+function doSign() {
+  if (!expr) return;
+  expr = expr.startsWith("-") ? expr.slice(1) : "-" + expr;
+  setDisplay(expr, justCalc);
 }
 
-function toggleSign() {
-  if (!input) return;
-  input = input.startsWith("-") ? input.slice(1) : "-" + input;
-  updateDisplay(input);
+/* ════════════════════════════════════
+   CODE SECRET
+════════════════════════════════════ */
+let secret = localStorage.getItem("sc");
+if (!secret) {
+  const s = prompt("Choisis ton code secret :");
+  if (s && s.trim()) { localStorage.setItem("sc", s.trim()); secret = s.trim(); }
 }
-
-/* ══ PLUS + RESET COUNTER ══ */
-let plusCount = 0, plusTimer = null;
-function pressPlus() {
-  pressOp("+");
-  plusCount++;
-  clearTimeout(plusTimer);
-  if (plusCount >= 4) { plusCount = 0; resetCode(); return; }
-  plusTimer = setTimeout(() => { plusCount = 0; }, 2000);
-}
-
-/* ══ SECRET CODE ══ */
-let savedCode = localStorage.getItem("calc_secret");
-if (!savedCode) {
-  const c = prompt("Choisis ton code secret :");
-  if (c && c.trim()) { localStorage.setItem("calc_secret", c.trim()); savedCode = c.trim(); }
-}
-function resetCode() {
-  localStorage.removeItem("calc_secret");
+function resetSecret() {
+  localStorage.removeItem("sc");
   alert("Code réinitialisé !");
   location.reload();
 }
 
-/* ══ CALCULATE ══ */
-function calculate() {
-  const code = localStorage.getItem("calc_secret");
-  if (code && input === code) { window.location.href = "app.html"; return; }
-  if (input === "0000") { resetCode(); return; }
-  if (!input) return;
+/* ════════════════════════════════════
+   CALCUL
+════════════════════════════════════ */
+function doCalc() {
+  const sc = localStorage.getItem("sc");
+  // Code secret → app.html
+  if (sc && expr === sc) { location.href = "app.html"; return; }
+  // Reset 0000
+  if (expr === "0000") { resetSecret(); return; }
+  if (!expr) return;
+
   try {
-    const clean = input.replace(/[^0-9+\-*/.()%]/g, "");
-    let result = Function('"use strict";return(' + clean + ')')();
-    if (!isFinite(result)) { updateDisplay("Erreur"); input = ""; return; }
-    result = parseFloat(result.toPrecision(12));
-    const expr = input.replace(/\./g, ",");
-    history.unshift({ expr: expr + " =", result: result.toString().replace(/\./g, ",") });
-    if (history.length > 50) history.pop();
-    localStorage.setItem("calc_history", JSON.stringify(history));
-    renderHistory();
-    updateExpr(expr + " =");
-    input = result.toString();
-    justCalculated = true; lastWasOp = false;
-    updateDisplay(input);
-  } catch { updateDisplay("Erreur"); input = ""; }
+    const safe = expr.replace(/[^0-9+\-*/.()%]/g, "");
+    let res = Function('"use strict";return(' + safe + ')')();
+    if (!isFinite(res)) { setDisplay("Erreur", false); expr = ""; return; }
+    res = parseFloat(res.toPrecision(12));
+
+    // Historique
+    const rec = { e: expr.replace(/\./g,",") + " =", r: res.toString().replace(/\./g,",") };
+    hist.unshift(rec);
+    if (hist.length > 50) hist.pop();
+    localStorage.setItem("ch", JSON.stringify(hist));
+    renderHist();
+
+    setExpr(expr.replace(/\./g,",") + " =");
+    expr = res.toString();
+    lastOp = false;
+    justCalc = true;
+    setDisplay(expr, true);   // ← VERT
+
+  } catch { setDisplay("Erreur", false); expr = ""; }
 }
 
-/* ══ HISTORY ══ */
-function renderHistory() {
-  const list = document.getElementById("history-list");
-  const empty = document.getElementById("history-empty");
-  const btn = document.getElementById("history-clear-btn");
-  if (!history.length) { empty.style.display="block"; btn.style.display="none"; list.innerHTML=""; return; }
-  empty.style.display = "none"; btn.style.display = "block";
-  list.innerHTML = history.map((h,i) => `
-    <div class="history-item" onclick="recallHistory(${i})">
-      <div class="history-expr">${h.expr}</div>
-      <div class="history-result">${h.result}</div>
+/* ════════════════════════════════════
+   PANELS
+════════════════════════════════════ */
+function openPanel(id)  { document.getElementById(id).classList.add("open"); }
+function closePanel(id) { document.getElementById(id).classList.remove("open"); }
+
+/* ════════════════════════════════════
+   HISTORIQUE
+════════════════════════════════════ */
+function renderHist() {
+  const hl  = document.getElementById("hl");
+  const he  = document.getElementById("he");
+  const hcb = document.getElementById("hcb");
+  if (!hist.length) {
+    he.style.display = "block"; hcb.style.display = "none"; hl.innerHTML = ""; return;
+  }
+  he.style.display = "none"; hcb.style.display = "block";
+  hl.innerHTML = hist.map((h,i) => `
+    <div class="hist-item" onclick="recallHist(${i})">
+      <div class="hist-expr">${h.e}</div>
+      <div class="hist-result">${h.r}</div>
     </div>`).join("");
 }
-function recallHistory(i) {
-  input = history[i].result.replace(/,/g, ".");
-  justCalculated = true; updateDisplay(input); closePanel("panel-history");
+function recallHist(i) {
+  expr = hist[i].r.replace(/,/g,".");
+  justCalc = true;
+  setDisplay(expr, true);
+  closePanel("ph");
 }
-function clearHistory() { history = []; localStorage.removeItem("calc_history"); renderHistory(); }
-renderHistory();
+function clearHist() {
+  hist = []; localStorage.removeItem("ch"); renderHist();
+}
+renderHist();
 
-/* ══ PANELS ══ */
-function openPanel(id)  { document.getElementById(id).classList.add("active"); }
-function closePanel(id) { document.getElementById(id).classList.remove("active"); }
-
-/* ══ CONVERTER ══ */
-const UNITS = {
-  length:  { m:"Mètre",km:"Kilomètre",cm:"Centimètre",mm:"Millimètre",mi:"Mile",yd:"Yard",ft:"Pied",in:"Pouce" },
-  weight:  { kg:"Kilogramme",g:"Gramme",mg:"Milligramme",lb:"Livre",oz:"Once",t:"Tonne" },
-  temp:    { C:"Celsius",F:"Fahrenheit",K:"Kelvin" },
-  area:    { m2:"m²",km2:"km²",cm2:"cm²",ha:"Hectare",ft2:"pied²",ac:"Acre" },
-  volume:  { L:"Litre",mL:"Millilitre",m3:"m³",gal:"Gallon (US)",qt:"Quart",fl_oz:"Fl. oz" },
-  speed:   { mps:"m/s",kmh:"km/h",mph:"mph",kn:"Nœud" },
-  time:    { s:"Seconde",min:"Minute",h:"Heure",d:"Jour",wk:"Semaine",mo:"Mois (30j)",yr:"Année" }
+/* ════════════════════════════════════
+   CONVERTISSEUR
+════════════════════════════════════ */
+const UDATA = {
+  length: { m:"Mètre", km:"Kilomètre", cm:"Centimètre", mm:"Millimètre", mi:"Mile", yd:"Yard", ft:"Pied", in:"Pouce" },
+  mass:   { kg:"Kilogramme", g:"Gramme", mg:"Milligramme", lb:"Livre", oz:"Once", t:"Tonne" },
+  temp:   { C:"Celsius", F:"Fahrenheit", K:"Kelvin" },
+  area:   { m2:"m²", km2:"km²", cm2:"cm²", ha:"Hectare", ft2:"pied²", ac:"Acre" },
+  vol:    { L:"Litre", mL:"Millilitre", m3:"m³", gal:"Gallon US", qt:"Quart", floz:"Fl. oz" },
+  speed:  { mps:"m/s", kmh:"km/h", mph:"mph", kn:"Nœud" },
+  time:   { s:"Seconde", min:"Minute", h:"Heure", d:"Jour", wk:"Semaine", mo:"Mois (30j)", yr:"Année" }
 };
-const TO_BASE = {
-  m:1,km:1000,cm:0.01,mm:0.001,mi:1609.344,yd:0.9144,ft:0.3048,in:0.0254,
-  kg:1,g:0.001,mg:1e-6,lb:0.453592,oz:0.028349,t:1000,
-  C:1,F:1,K:1,
-  m2:1,km2:1e6,cm2:1e-4,ha:10000,ft2:0.092903,ac:4046.86,
-  L:1,mL:0.001,m3:1000,gal:3.78541,qt:0.946353,fl_oz:0.029574,
-  mps:1,kmh:0.277778,mph:0.44704,kn:0.514444,
-  s:1,min:60,h:3600,d:86400,wk:604800,mo:2592000,yr:31536000
+const UBASE = {
+  m:1, km:1000, cm:.01, mm:.001, mi:1609.344, yd:.9144, ft:.3048, in:.0254,
+  kg:1, g:.001, mg:1e-6, lb:.453592, oz:.028349, t:1000,
+  C:1, F:1, K:1,
+  m2:1, km2:1e6, cm2:1e-4, ha:1e4, ft2:.092903, ac:4046.86,
+  L:1, mL:.001, m3:1000, gal:3.78541, qt:.946353, floz:.029574,
+  mps:1, kmh:.277778, mph:.44704, kn:.514444,
+  s:1, min:60, h:3600, d:86400, wk:604800, mo:2592000, yr:31536000
 };
 
-function convertVal(v, from, to, type) {
+function cvt(v, from, to, type) {
   if (type === "temp") {
     let c = from==="C" ? v : from==="F" ? (v-32)*5/9 : v-273.15;
     return to==="C" ? c : to==="F" ? c*9/5+32 : c+273.15;
   }
-  return v * TO_BASE[from] / TO_BASE[to];
+  return v * UBASE[from] / UBASE[to];
 }
 
-function populateUnits() {
-  const type = document.getElementById("conv-type").value;
-  const units = UNITS[type];
-  const keys = Object.keys(units);
-  const fSel = document.getElementById("conv-from-sel");
-  const tSel = document.getElementById("conv-to-sel");
-  fSel.innerHTML = keys.map((k,i) => `<option value="${k}"${i===0?" selected":""}>${units[k]}</option>`).join("");
-  tSel.innerHTML = keys.map((k,i) => `<option value="${k}"${i===1?" selected":""}>${units[k]}</option>`).join("");
-  document.getElementById("conv-from-unit").textContent = units[keys[0]];
-  document.getElementById("conv-to-unit").textContent   = units[keys[1]];
+function initConv() {
+  const type = document.getElementById("ctype").value;
+  const units = UDATA[type];
+  const keys  = Object.keys(units);
+  const s1 = document.getElementById("cs1");
+  const s2 = document.getElementById("cs2");
+  s1.innerHTML = keys.map((k,i)=>`<option value="${k}"${i===0?" selected":""}>${units[k]}</option>`).join("");
+  s2.innerHTML = keys.map((k,i)=>`<option value="${k}"${i===1?" selected":""}>${units[k]}</option>`).join("");
+  document.getElementById("cu1").textContent = units[keys[0]];
+  document.getElementById("cu2").textContent = units[keys[1]];
+  doConv(1);
 }
 
-function initConverter() { populateUnits(); convertFrom(); }
-
-function onFromSelChange() {
-  const type = document.getElementById("conv-type").value;
-  document.getElementById("conv-from-unit").textContent = UNITS[type][document.getElementById("conv-from-sel").value];
-  convertFrom();
+function onCS1() {
+  const type = document.getElementById("ctype").value;
+  document.getElementById("cu1").textContent = UDATA[type][document.getElementById("cs1").value];
+  doConv(1);
 }
 
-function convertFrom() {
-  const type = document.getElementById("conv-type").value;
-  const from = document.getElementById("conv-from-sel").value;
-  const to   = document.getElementById("conv-to-sel").value;
-  document.getElementById("conv-to-unit").textContent = UNITS[type][to];
-  const v = parseFloat(document.getElementById("conv-from-val").value);
-  if (isNaN(v)) return;
-  const r = convertVal(v, from, to, type);
-  document.getElementById("conv-to-val").value = parseFloat(r.toPrecision(8));
+function doConv(dir) {
+  const type = document.getElementById("ctype").value;
+  const from = document.getElementById("cs1").value;
+  const to   = document.getElementById("cs2").value;
+  document.getElementById("cu2").textContent = UDATA[type][to];
+  if (dir === 1) {
+    const v = parseFloat(document.getElementById("cv1").value);
+    if (isNaN(v)) return;
+    document.getElementById("cv2").value = parseFloat(cvt(v,from,to,type).toPrecision(8));
+  }
 }
 
-function swapUnits() {
-  const fSel = document.getElementById("conv-from-sel");
-  const tSel = document.getElementById("conv-to-sel");
-  const tmp = fSel.value; fSel.value = tSel.value; tSel.value = tmp;
-  const type = document.getElementById("conv-type").value;
-  document.getElementById("conv-from-unit").textContent = UNITS[type][fSel.value];
-  document.getElementById("conv-to-unit").textContent   = UNITS[type][tSel.value];
-  const fVal = document.getElementById("conv-from-val").value;
-  const tVal = document.getElementById("conv-to-val").value;
-  document.getElementById("conv-from-val").value = tVal;
-  convertFrom();
+function swapConv() {
+  const s1 = document.getElementById("cs1");
+  const s2 = document.getElementById("cs2");
+  const tmp = s1.value; s1.value = s2.value; s2.value = tmp;
+  const type = document.getElementById("ctype").value;
+  document.getElementById("cu1").textContent = UDATA[type][s1.value];
+  document.getElementById("cu2").textContent = UDATA[type][s2.value];
+  // swap valeurs affichées
+  const v1 = document.getElementById("cv1").value;
+  const v2 = document.getElementById("cv2").value;
+  document.getElementById("cv1").value = v2;
+  doConv(1);
 }
 
-/* ══ FORMULA ══ */
-function useFormula(f) { input = f; justCalculated = false; updateDisplay(input); closePanel("panel-formula"); }
+/* ════════════════════════════════════
+   FORMULES
+════════════════════════════════════ */
+function insFormula(f) {
+  expr = f; justCalc = false;
+  setDisplay(expr, false);
+  closePanel("pf");
+}
 
-/* ══ KEYBOARD ══ */
+/* ════════════════════════════════════
+   CLAVIER PHYSIQUE
+════════════════════════════════════ */
 document.addEventListener("keydown", e => {
-  if (document.querySelector(".panel.active")) return;
-  if (e.key >= "0" && e.key <= "9") pressNum(e.key);
-  else if (e.key === "+") pressPlus();
-  else if (e.key === "-") pressOp("-");
-  else if (e.key === "*") pressOp("*");
-  else if (e.key === "/") { e.preventDefault(); pressOp("/"); }
-  else if (e.key === "." || e.key === ",") pressDecimal();
-  else if (e.key === "%" ) pressPercent();
-  else if (e.key === "(" || e.key === ")") pressParen();
-  else if (e.key === "Enter" || e.key === "=") calculate();
-  else if (e.key === "Backspace") backspace();
-  else if (e.key === "Escape") clearAll();
+  if (document.querySelector(".panel.open")) return;
+  if (e.key >= "0" && e.key <= "9") doNum(e.key);
+  else if (e.key === "+") doPlus();
+  else if (e.key === "-") doOp("-");
+  else if (e.key === "*") doOp("*");
+  else if (e.key === "/") { e.preventDefault(); doOp("/"); }
+  else if (e.key === "." || e.key === ",") doDot();
+  else if (e.key === "%") doPct();
+  else if (e.key === "(" || e.key === ")") doParen();
+  else if (e.key === "Enter" || e.key === "=") doCalc();
+  else if (e.key === "Backspace") doBksp();
+  else if (e.key === "Escape") doClear();
 });
 </script>
 </body>
