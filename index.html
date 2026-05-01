@@ -77,18 +77,17 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    padding: 8px 0;
+    padding: 6px 0;
     border-radius: 8px;
     transition: background 0.15s;
   }
   .toolbar-btn:hover { background: #1a1a1a; }
   .toolbar-btn svg {
     width: 22px; height: 22px;
-    stroke: #666; fill: none;
+    stroke: #aaaaaa;
+    fill: none;
     stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
   }
-
-  .toolbar-spacer { flex: 3; }
 
   .backspace-btn {
     flex: 1;
@@ -100,12 +99,13 @@
   }
   .backspace-btn svg {
     width: 26px; height: 22px;
-    stroke: #1db954; fill: none;
+    stroke: #1db954;           /* Bouton effacer en vert */
+    fill: none;
     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
 
   .keypad {
-    padding: 8px 12px 16px;
+    padding: 12px 12px 40px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
@@ -114,7 +114,7 @@
   .btn {
     width: 72px; height: 72px;
     border-radius: 50%; border: none;
-    font-size: 26px; font-weight: 400;
+    font-size: 28px; font-weight: 500;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     background: #1e1e1e; color: #fff;
@@ -122,15 +122,14 @@
     outline: none; user-select: none; margin: 0 auto;
   }
   .btn:active { transform: scale(0.9); background: #2a2a2a; }
-  .btn.green { color: #1db954; font-size: 30px; }
+  .btn.green { color: #1db954; font-size: 32px; }
   .btn.red   { color: #e05c5c; font-size: 32px; font-weight: 600; }
   .btn.equals {
     background: #1db954; color: #fff;
-    font-size: 34px; width: 72px; height: 72px; border-radius: 50%;
+    font-size: 36px; width: 72px; height: 72px; border-radius: 50%;
   }
   .btn.equals:active { background: #17a349; }
 
-  /* MODALS */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.7); z-index: 100;
@@ -169,10 +168,6 @@
     border-radius: 10px; padding: 10px; color: #fff; font-size: 14px; outline: none;
   }
   .conv-arrow { color: #1db954; font-size: 22px; text-align: center; margin: 4px 0; }
-
-  /* POPUP CODE */
-  #codeModal .modal { text-align: center; }
-  #codeModal h2 { text-align: center; }
 
   .code-display {
     font-size: 36px; letter-spacing: 8px; color: #fff;
@@ -360,27 +355,24 @@ function closeCodeModal() {
 document.querySelectorAll('.code-btn[data-cd]').forEach(btn => {
   btn.addEventListener('click', () => {
     codeBuffer += btn.dataset.cd;
-    codeDisplay.textContent = '•'.repeat(codeBuffer.length);
+    codeDisplay.textContent = codeBuffer;   // Affiche les vrais chiffres
     codeHint.textContent = '';
   });
 });
 
 document.getElementById('codeDel').addEventListener('click', () => {
   codeBuffer = codeBuffer.slice(0, -1);
-  codeDisplay.textContent = '•'.repeat(codeBuffer.length);
+  codeDisplay.textContent = codeBuffer;     // Affiche les vrais chiffres
 });
 
 document.getElementById('codeOk').addEventListener('click', () => {
   if (!codeBuffer) { codeHint.textContent = 'Entrez au moins un chiffre'; return; }
-  // Sauvegarde et on atterrit directement sur la calculatrice
   localStorage.setItem(STORAGE_KEY, codeBuffer);
   closeCodeModal();
 });
 
-// Empêche fermeture en cliquant dehors
 codeModal.addEventListener('click', e => { if (e.target === codeModal) e.stopPropagation(); });
 
-// Première ouverture : popup si aucun code défini
 window.addEventListener('load', () => {
   if (!localStorage.getItem(STORAGE_KEY)) openCodeModal(false);
 });
@@ -391,8 +383,8 @@ let expression = '';
 let justEvaled = false;
 let openParens = 0;
 let history    = [];
-let secretBuf  = '';   // chiffres tapés seuls (potentiel code)
-let plusCount  = 0;    // + consécutifs pour séquence reset
+let secretBuf  = '';
+let plusCount  = 0;
 
 const displayText = document.getElementById('displayText');
 const mainDisplay = document.getElementById('mainDisplay');
@@ -417,7 +409,6 @@ document.querySelectorAll('[data-num]').forEach(btn => {
     const n = btn.dataset.num;
     plusCount = 0;
 
-    // Accumulation code secret
     if (justEvaled || expression === '') secretBuf = n;
     else secretBuf += n;
 
@@ -512,7 +503,6 @@ document.getElementById('btnC').addEventListener('click', clear);
 
 document.getElementById('btnEq').addEventListener('click', () => {
 
-  // Séquence reset : 5 × "+" puis "="
   if (plusCount >= 5) {
     clear();
     localStorage.removeItem(STORAGE_KEY);
@@ -520,7 +510,6 @@ document.getElementById('btnEq').addEventListener('click', () => {
     return;
   }
 
-  // Code secret : chiffres tapés = code sauvegardé → redirect app.html
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && secretBuf === saved && expression === saved) {
     clear();
@@ -528,7 +517,6 @@ document.getElementById('btnEq').addEventListener('click', () => {
     return;
   }
 
-  // Calcul normal
   if (expression === '') return;
   let expr = expression;
   let op = openParens;
@@ -615,7 +603,7 @@ function populateSelects(cat) {
   ['convFrom','convTo'].forEach((id, idx) => {
     const el = document.getElementById(id);
     const keys = Object.keys(units[cat]);
-    el.innerHTML = keys.map(k => `<option value="${k}">${units[cat][k]}</option>`).join('');
+    el.innerHTML = keys.map(k => `<option value="\( {k}"> \){units[cat][k]}</option>`).join('');
     if (idx === 1 && keys.length > 1) el.selectedIndex = 1;
   });
 }
