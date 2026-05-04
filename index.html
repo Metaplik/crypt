@@ -30,7 +30,8 @@
   /* Display légèrement réduit pour descendre l'ensemble des touches */
   .display {
     width: 100%;
-    flex: 1;
+    height: 210px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -62,7 +63,7 @@
     min-height: 60px;
   }
 
-  .main-display.result { color: #39ff14; }
+  .main-display.result { color: #2eeb10; }
 
   /* Toolbar : icônes groupées à gauche, collée au-dessus des boutons */
   .toolbar {
@@ -106,14 +107,14 @@
   }
   .backspace-btn svg {
     width: 26px; height: 22px;
-    stroke: #39ff14;
+    stroke: #2eeb10;
     fill: none;
     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
 
   /* Keypad avec padding-bottom augmenté pour l'écart en bas */
   .keypad {
-    padding: 6px 12px 50px;
+    padding: 10px 12px 30px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
@@ -134,10 +135,10 @@
   .btn:active { background: #2a2a2a; }
 
   /* Symboles opérateurs plus grands */
-  .btn.green { color: #39ff14; font-size: 36px; }
+  .btn.green { color: #2eeb10; font-size: 36px; }
   .btn.red   { color: #e05c5c; font-size: 32px; font-weight: 600; }
   .btn.equals {
-    background: #39ff14; color: #fff;
+    background: #2eeb10; color: #fff;
     font-size: 40px; width: 72px; height: 72px; border-radius: 50%;
     touch-action: manipulation;
   }
@@ -155,7 +156,7 @@
     border-radius: 20px 20px 0 0; padding: 20px;
     max-height: 70vh; overflow-y: auto; color: #fff;
   }
-  .modal h2 { font-size: 18px; font-weight: 500; margin-bottom: 16px; color: #39ff14; }
+  .modal h2 { font-size: 18px; font-weight: 500; margin-bottom: 16px; color: #2eeb10; }
   .modal-close { float: right; cursor: pointer; color: #888; font-size: 20px; line-height: 1; margin-top: -4px; }
 
   .history-item { padding: 12px 0; border-bottom: 1px solid #2a2a2a; cursor: pointer; }
@@ -170,7 +171,7 @@
     background: #2a2a2a; color: #aaa;
     cursor: pointer; font-size: 13px; border: none; transition: all 0.15s;
   }
-  .conv-tab.active { background: #39ff14; color: #000; }
+  .conv-tab.active { background: #2eeb10; color: #000; }
   .conv-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .conv-row input {
     flex: 1; background: #2a2a2a; border: none;
@@ -180,7 +181,7 @@
     flex: 1; background: #2a2a2a; border: none;
     border-radius: 10px; padding: 10px; color: #fff; font-size: 14px; outline: none;
   }
-  .conv-arrow { color: #39ff14; font-size: 22px; text-align: center; margin: 4px 0; }
+  .conv-arrow { color: #2eeb10; font-size: 22px; text-align: center; margin: 4px 0; }
 
   .code-display {
     font-size: 36px; letter-spacing: 8px; color: #fff;
@@ -202,9 +203,9 @@
     outline: none; user-select: none;
   }
   .code-btn:active { transform: scale(0.95); background: #333; }
-  .code-btn.action-ok { background: #39ff14; color: #000; font-size: 18px; font-weight: 600; }
+  .code-btn.action-ok { background: #2eeb10; color: #000; font-size: 18px; font-weight: 600; }
   .code-btn.action-ok:active { background: #2ecc10; }
-  .code-btn.action-del { background: transparent; color: #39ff14; font-size: 22px; }
+  .code-btn.action-del { background: transparent; color: #2eeb10; font-size: 22px; }
 
   @keyframes shake {
     0%,100%{transform:translateX(0)}
