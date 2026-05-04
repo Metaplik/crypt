@@ -63,7 +63,7 @@
     min-height: 60px;
   }
 
-  .main-display.result { color: #2eeb10; }
+  .main-display.result { color: #1db954; }
 
   /* Toolbar : icônes groupées à gauche, collée au-dessus des boutons */
   .toolbar {
@@ -107,7 +107,7 @@
   }
   .backspace-btn svg {
     width: 26px; height: 22px;
-    stroke: #2eeb10;
+    stroke: #1db954;
     fill: none;
     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
@@ -135,10 +135,10 @@
   .btn:active { background: #2a2a2a; }
 
   /* Symboles opérateurs plus grands */
-  .btn.green { color: #2eeb10; font-size: 36px; }
+  .btn.green { color: #1db954; font-size: 36px; }
   .btn.red   { color: #e05c5c; font-size: 32px; font-weight: 600; }
   .btn.equals {
-    background: #2eeb10; color: #fff;
+    background: #1db954; color: #fff;
     font-size: 40px; width: 72px; height: 72px; border-radius: 50%;
     touch-action: manipulation;
   }
@@ -156,7 +156,7 @@
     border-radius: 20px 20px 0 0; padding: 20px;
     max-height: 70vh; overflow-y: auto; color: #fff;
   }
-  .modal h2 { font-size: 18px; font-weight: 500; margin-bottom: 16px; color: #2eeb10; }
+  .modal h2 { font-size: 18px; font-weight: 500; margin-bottom: 16px; color: #1db954; }
   .modal-close { float: right; cursor: pointer; color: #888; font-size: 20px; line-height: 1; margin-top: -4px; }
 
   .history-item { padding: 12px 0; border-bottom: 1px solid #2a2a2a; cursor: pointer; }
@@ -171,7 +171,7 @@
     background: #2a2a2a; color: #aaa;
     cursor: pointer; font-size: 13px; border: none; transition: all 0.15s;
   }
-  .conv-tab.active { background: #2eeb10; color: #000; }
+  .conv-tab.active { background: #1db954; color: #000; }
   .conv-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .conv-row input {
     flex: 1; background: #2a2a2a; border: none;
@@ -181,7 +181,7 @@
     flex: 1; background: #2a2a2a; border: none;
     border-radius: 10px; padding: 10px; color: #fff; font-size: 14px; outline: none;
   }
-  .conv-arrow { color: #2eeb10; font-size: 22px; text-align: center; margin: 4px 0; }
+  .conv-arrow { color: #1db954; font-size: 22px; text-align: center; margin: 4px 0; }
 
   .code-display {
     font-size: 36px; letter-spacing: 8px; color: #fff;
@@ -203,9 +203,9 @@
     outline: none; user-select: none;
   }
   .code-btn:active { transform: scale(0.95); background: #333; }
-  .code-btn.action-ok { background: #2eeb10; color: #000; font-size: 18px; font-weight: 600; }
+  .code-btn.action-ok { background: #1db954; color: #000; font-size: 18px; font-weight: 600; }
   .code-btn.action-ok:active { background: #2ecc10; }
-  .code-btn.action-del { background: transparent; color: #2eeb10; font-size: 22px; }
+  .code-btn.action-del { background: transparent; color: #1db954; font-size: 22px; }
 
   @keyframes shake {
     0%,100%{transform:translateX(0)}
@@ -419,22 +419,28 @@ window.addEventListener('load', () => {
 });
 
 // ── ROTATION ÉCRAN — bascule directe ──
-// On simule le mode paysage/portrait en appliquant une rotation CSS sur .phone
 let isLandscape = false;
 document.getElementById('btnRotate').addEventListener('click', () => {
   isLandscape = !isLandscape;
   const phone = document.querySelector('.phone');
   if (isLandscape) {
-    phone.style.transform = 'rotate(90deg)';
-    phone.style.transformOrigin = 'center center';
+    phone.style.flexDirection = 'row';
     phone.style.width = '780px';
     phone.style.height = '360px';
-    phone.style.flexDirection = 'row';
+    phone.querySelector('.display').style.cssText = 'width:50%;height:100%;justify-content:flex-end;padding:20px;';
+    phone.querySelector('.keypad').style.cssText = 'padding:8px 8px 16px;gap:8px;';
+    document.querySelectorAll('.btn').forEach(b => { b.style.width='58px'; b.style.height='58px'; b.style.fontSize='20px'; });
+    document.querySelectorAll('.btn.green').forEach(b => b.style.fontSize='26px');
+    document.querySelectorAll('.btn.equals').forEach(b => { b.style.width='58px'; b.style.height='58px'; b.style.fontSize='28px'; });
   } else {
-    phone.style.transform = '';
+    phone.style.flexDirection = 'column';
     phone.style.width = '360px';
     phone.style.height = '780px';
-    phone.style.flexDirection = 'column';
+    phone.querySelector('.display').style.cssText = '';
+    phone.querySelector('.keypad').style.cssText = '';
+    document.querySelectorAll('.btn').forEach(b => { b.style.width=''; b.style.height=''; b.style.fontSize=''; });
+    document.querySelectorAll('.btn.green').forEach(b => b.style.fontSize='');
+    document.querySelectorAll('.btn.equals').forEach(b => { b.style.width=''; b.style.height=''; b.style.fontSize=''; });
   }
 });
 
@@ -527,10 +533,10 @@ addBtnListener(document.getElementById('btnSub'), () => addOperator('-', '−'))
 addBtnListener(document.getElementById('btnMul'), () => addOperator('*', '×'));
 addBtnListener(document.getElementById('btnDiv'), () => addOperator('/', '÷'));
 
-// ── % CORRIGÉ : affiche uniquement le résultat après = ──
+// ── % : divise le nombre courant par 100 ──
 addBtnListener(document.getElementById('btnPercent'), () => {
   plusCount = 0; secretBuf = '';
-  if (current === '' || current === '0') return;
+  if (current === '') return;
   const v = parseFloat(current) / 100;
   const vStr = String(+v.toFixed(10));
   expression = expression.slice(0, -current.length) + vStr;
