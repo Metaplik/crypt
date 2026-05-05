@@ -43,14 +43,12 @@
             position: relative;
         }
 
-        /* ===== MATRIX BG ===== */
         #matrix {
             position: fixed; inset: 0;
             z-index: 0;
             opacity: 0.55;
         }
 
-        /* scanlines overlay */
         body::after {
             content: '';
             position: fixed; inset: 0; z-index: 1;
@@ -64,7 +62,6 @@
             pointer-events: none;
         }
 
-        /* ===== PANEL ===== */
         .panel {
             position: relative; z-index: 2;
             width: 100%; max-width: 400px;
@@ -85,7 +82,6 @@
                 inset 0 -1px 0 rgba(0,255,65,0.06);
         }
 
-        /* top chrome bar */
         .panel::before {
             content: '';
             position: absolute; top: 0; left: 0; right: 0;
@@ -97,40 +93,12 @@
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
 
-        /* ===== LOGO ===== */
         .logo-wrap {
             display: flex;
             flex-direction: column;
             align-items: center;
             margin-bottom: 16px;
             gap: 6px;
-        }
-
-        .logo-svg-wrap {
-            position: relative;
-            width: 100px;
-            height: 60px;
-        }
-
-        /* Rotating ring behind logo */
-        .logo-ring {
-            position: absolute;
-            inset: -8px;
-            border-radius: 50%;
-            border: 1px solid transparent;
-            background:
-                conic-gradient(from 0deg, transparent 0%, var(--neon) 20%, transparent 40%, transparent 60%, var(--neon) 80%, transparent 100%)
-                border-box;
-            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
-            animation: rotatering 4s linear infinite;
-            opacity: 0.6;
-        }
-
-        @keyframes rotatering {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
         }
 
         .logo-title {
@@ -145,7 +113,6 @@
             background-clip: text;
             filter: drop-shadow(0 0 12px rgba(0,255,65,0.6));
             animation: logopulse 3s ease-in-out infinite;
-            position: relative;
         }
 
         @keyframes logopulse {
@@ -153,24 +120,6 @@
             50%       { filter: drop-shadow(0 0 22px rgba(0,255,65,0.9)) drop-shadow(0 0 40px rgba(0,255,65,0.3)); }
         }
 
-        .logo-sub {
-            font-size: 10px;
-            letter-spacing: 4px;
-            color: var(--neon-dim);
-            text-transform: uppercase;
-            margin-top: -2px;
-        }
-
-        /* decorative line under logo */
-        .logo-line {
-            width: 80%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            margin: 4px auto 0;
-            opacity: 0.4;
-        }
-
-        /* ===== INPUT ===== */
         .input-group {
             display: flex;
             gap: 8px;
@@ -217,7 +166,6 @@
             transform: scale(0.97);
         }
 
-        /* ===== CONNECTED LIST ===== */
         .section-label {
             font-size: 10px;
             letter-spacing: 3px;
@@ -252,7 +200,6 @@
             letter-spacing: 1px;
         }
 
-        /* ===== PUSH ROW ===== */
         .push-row {
             display: flex;
             align-items: center;
@@ -261,7 +208,6 @@
             margin: 12px 0;
         }
 
-        /* Side pill buttons */
         .pill-btn {
             display: flex;
             flex-direction: column;
@@ -295,7 +241,6 @@
                 inset 0 1px 0 rgba(255,42,42,0.12);
         }
 
-        /* ===== PUSH BUTTON ===== */
         #talkBtnWrapper {
             position: relative;
             width: 116px;
@@ -306,7 +251,6 @@
             flex-shrink: 0;
         }
 
-        /* outer glow disc */
         .push-glow-ring {
             position: absolute;
             inset: -4px;
@@ -325,7 +269,6 @@
             filter: blur(1px);
         }
 
-        /* mask to make it thin ring */
         .push-glow-mask {
             position: absolute;
             inset: 3px;
@@ -354,7 +297,6 @@
             transition: transform 0.08s;
         }
 
-        /* SVG push button graphic */
         #talkBtn svg {
             width: 100%;
             height: 100%;
@@ -364,14 +306,11 @@
             transition: filter 0.1s;
         }
 
-        #talkBtn.pressing {
-            transform: scale(0.91);
-        }
+        #talkBtn.pressing { transform: scale(0.91); }
         #talkBtn.pressing svg {
             filter: drop-shadow(0 0 28px rgba(0,255,65,0.9)) drop-shadow(0 0 8px rgba(0,255,65,0.8)) brightness(1.2);
         }
 
-        /* ===== TIMER POPUP ===== */
         #timerPopup {
             position: absolute;
             top: -44px;
@@ -405,7 +344,6 @@
             100% { opacity: 0; transform: translateX(-50%) scale(0.5) translateY(-36px); }
         }
 
-        /* ===== ACTION BAR ===== */
         .action-bar {
             display: flex;
             justify-content: center;
@@ -432,10 +370,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.15s;
-            box-shadow:
-                0 4px 14px rgba(0,0,0,0.5),
-                inset 0 1px 0 rgba(0,255,65,0.1),
-                0 0 0 0 rgba(0,255,65,0);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,255,65,0.1);
         }
         .action-btn:active .action-icon {
             transform: scale(0.92);
@@ -449,7 +384,6 @@
             text-transform: uppercase;
         }
 
-        /* ===== STATUS ===== */
         #status {
             text-align: center;
             font-size: 14px;
@@ -460,7 +394,7 @@
             margin: 2px 0 8px;
         }
 
-        /* ===== VIDEO PANEL ===== */
+        /* ===== VIDEO PANEL - FIXED ===== */
         #videoPanel {
             display: none;
             margin: 8px 0;
@@ -470,8 +404,50 @@
             position: relative;
             background: #000;
             box-shadow: 0 0 20px rgba(0,255,65,0.1);
+            /* Half screen height approx */
+            height: 50vh;
+            min-height: 260px;
         }
-        #remoteVideo { width: 100%; max-height: 190px; object-fit: cover; display: block; }
+
+        /* Multi-participant grid */
+        #remoteVideosGrid {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            gap: 2px;
+            background: #000;
+        }
+
+        /* Grid layouts depending on participant count */
+        #remoteVideosGrid.count-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+        #remoteVideosGrid.count-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+        #remoteVideosGrid.count-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        #remoteVideosGrid.count-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        .remote-video-wrap {
+            position: relative;
+            background: #0a150a;
+            overflow: hidden;
+        }
+        .remote-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .remote-video-label {
+            position: absolute;
+            bottom: 4px; left: 6px;
+            font-size: 9px;
+            color: var(--neon);
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 6px var(--neon);
+            background: rgba(0,0,0,0.5);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
         #localVideo {
             position: absolute; bottom: 8px; right: 8px;
             width: 76px; height: 56px;
@@ -479,6 +455,7 @@
             border: 1px solid var(--neon2);
             border-radius: 8px;
             background: #111;
+            z-index: 5;
         }
         .video-label {
             position: absolute; top: 8px; left: 10px;
@@ -487,9 +464,30 @@
             letter-spacing: 3px;
             text-shadow: 0 0 8px var(--neon);
             font-family: 'Orbitron', sans-serif;
+            z-index: 5;
         }
 
-        /* ===== DIVIDER ===== */
+        /* Flip camera button */
+        #flipCameraBtn {
+            position: absolute;
+            bottom: 8px; left: 8px;
+            z-index: 6;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0,20,0,0.85);
+            border: 1px solid var(--border);
+            color: var(--neon);
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 0 10px rgba(0,255,65,0.2);
+        }
+        #flipCameraBtn:active {
+            background: rgba(0,255,65,0.2);
+            transform: scale(0.9) rotate(180deg);
+        }
+
         .divider {
             display: flex;
             align-items: center;
@@ -507,7 +505,6 @@
             text-transform: uppercase;
         }
 
-        /* ===== MESSAGING ===== */
         .messages-box {
             background: rgba(0,255,65,0.02);
             border: 1px solid var(--border2);
@@ -549,7 +546,24 @@
         .msg-media img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; border: 1px solid var(--border); }
         .msg-media video { max-width: 100%; border-radius: 8px; margin-top: 4px; border: 1px solid var(--border); }
 
-        /* ===== CHAT INPUT ===== */
+        /* File download link */
+        .msg-file-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            padding: 6px 10px;
+            background: rgba(0,255,65,0.08);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--neon);
+            font-size: 12px;
+            text-decoration: none;
+            letter-spacing: 1px;
+            word-break: break-all;
+        }
+        .msg-file-link:hover { background: rgba(0,255,65,0.15); }
+
         .chat-input-row {
             display: flex;
             gap: 8px;
@@ -592,9 +606,17 @@
             transform: scale(0.93);
         }
 
+        /* Upload progress indicator */
+        .upload-progress {
+            font-size: 11px;
+            color: var(--neon-dim);
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 3px 0;
+        }
+
         #fileInput { display: none; }
 
-        /* ===== FOOTER INFO ===== */
         .footer-info {
             text-align: center;
             font-size: 9px;
@@ -605,7 +627,6 @@
             line-height: 1.6;
         }
 
-        /* ===== LIGHTBOX ===== */
         #lightbox {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.93); z-index: 9999;
@@ -620,7 +641,6 @@
             opacity: 0.8;
         }
 
-        /* ===== CALL POPUP ===== */
         #callPopup {
             display: none; position: fixed; inset: 0; z-index: 8888;
             background: rgba(0,0,0,0.88); justify-content: center; align-items: center;
@@ -678,13 +698,11 @@
 <body>
 <canvas id="matrix"></canvas>
 
-<!-- Lightbox -->
 <div id="lightbox">
     <span id="lightbox-close">✕</span>
     <img id="lightbox-img" src="" alt="photo">
 </div>
 
-<!-- Call popup -->
 <div id="callPopup">
     <div class="call-box">
         <h2 id="callPopupTitle">APPEL ENTRANT</h2>
@@ -696,13 +714,10 @@
     </div>
 </div>
 
-<!-- Main panel -->
 <div class="panel">
 
-    <!-- LOGO -->
     <div class="logo-wrap">
         <div>
-            <!-- Inline SVG Logo -->
             <svg width="280" height="64" viewBox="0 0 280 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="textGrad" x1="0" y1="0" x2="0" y2="1">
@@ -719,66 +734,26 @@
                         <feGaussianBlur stdDeviation="3" result="blur"/>
                         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                     </filter>
-                    <filter id="outerGlow" x="-30%" y="-60%" width="160%" height="220%">
-                        <feGaussianBlur stdDeviation="6" result="blur"/>
-                        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 1  0 0 0 0 0.25  0 0 0 1 0" result="green"/>
-                        <feMerge><feMergeNode in="green"/><feMergeNode in="SourceGraphic"/></feMerge>
-                    </filter>
-                    <!-- Lock icon path -->
                     <clipPath id="panelClip">
                         <rect x="1" y="1" width="278" height="62" rx="8"/>
                     </clipPath>
                 </defs>
-
-                <!-- Background panel -->
-                <rect x="0.5" y="0.5" width="279" height="63" rx="8.5"
-                    fill="url(#bgPanel)" stroke="rgba(0,255,65,0.18)" stroke-width="1"/>
-                <rect x="0" y="0" width="280" height="32" rx="8"
-                    fill="rgba(0,255,65,0.04)" clip-path="url(#panelClip)"/>
-
-                <!-- Top chrome line -->
+                <rect x="0.5" y="0.5" width="279" height="63" rx="8.5" fill="url(#bgPanel)" stroke="rgba(0,255,65,0.18)" stroke-width="1"/>
+                <rect x="0" y="0" width="280" height="32" rx="8" fill="rgba(0,255,65,0.04)" clip-path="url(#panelClip)"/>
                 <line x1="20" y1="1" x2="260" y2="1" stroke="rgba(200,255,210,0.25)" stroke-width="1"/>
-
-                <!-- Decorative bracket left -->
                 <path d="M16 12 L8 12 L8 52 L16 52" stroke="rgba(0,255,65,0.35)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Decorative bracket right -->
                 <path d="M264 12 L272 12 L272 52 L264 52" stroke="rgba(0,255,65,0.35)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-                <!-- Lock icon left of text -->
                 <g transform="translate(24, 18)">
                     <rect x="2" y="10" width="18" height="14" rx="2" fill="none" stroke="rgba(0,255,65,0.5)" stroke-width="1.5"/>
                     <path d="M5 10 V7 a6 6 0 0 1 12 0 V10" fill="none" stroke="rgba(0,255,65,0.5)" stroke-width="1.5" stroke-linecap="round"/>
                     <circle cx="11" cy="17" r="2" fill="rgba(0,255,65,0.5)"/>
                 </g>
-
-                <!-- CRYPT text -->
-                <text x="140" y="46"
-                    text-anchor="middle"
-                    font-family="Orbitron, sans-serif"
-                    font-weight="900"
-                    font-size="38"
-                    letter-spacing="12"
-                    fill="url(#textGrad)"
-                    filter="url(#textGlow)">CRYPT</text>
-
-                <!-- Shine overlay on text -->
-                <text x="140" y="46"
-                    text-anchor="middle"
-                    font-family="Orbitron, sans-serif"
-                    font-weight="900"
-                    font-size="38"
-                    letter-spacing="12"
-                    fill="url(#shineGrad)"
-                    clip-path="url(#panelClip)">CRYPT</text>
-
-                <!-- Shield icon right of text -->
+                <text x="140" y="46" text-anchor="middle" font-family="Orbitron, sans-serif" font-weight="900" font-size="38" letter-spacing="12" fill="url(#textGrad)" filter="url(#textGlow)">CRYPT</text>
+                <text x="140" y="46" text-anchor="middle" font-family="Orbitron, sans-serif" font-weight="900" font-size="38" letter-spacing="12" fill="url(#shineGrad)" clip-path="url(#panelClip)">CRYPT</text>
                 <g transform="translate(232, 18)">
-                    <path d="M11 3 L20 7 L20 14 C20 19 15.5 23 11 25 C6.5 23 2 19 2 14 L2 7 Z"
-                        fill="none" stroke="rgba(0,255,65,0.5)" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M11 3 L20 7 L20 14 C20 19 15.5 23 11 25 C6.5 23 2 19 2 14 L2 7 Z" fill="none" stroke="rgba(0,255,65,0.5)" stroke-width="1.5" stroke-linejoin="round"/>
                     <path d="M7 14 L10 17 L15 11" stroke="rgba(0,255,65,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </g>
-
-                <!-- Bottom decorative dots -->
                 <circle cx="20" cy="60" r="1.5" fill="rgba(0,255,65,0.3)"/>
                 <circle cx="260" cy="60" r="1.5" fill="rgba(0,255,65,0.3)"/>
                 <line x1="30" y1="60" x2="120" y2="60" stroke="rgba(0,255,65,0.12)" stroke-width="1"/>
@@ -788,19 +763,15 @@
         </div>
     </div>
 
-    <!-- JOIN -->
     <div class="input-group">
         <input type="text" id="roomName" placeholder="CODE ACCES" autocomplete="off">
         <button class="btn-join" onclick="joinRoom()">JOIN</button>
     </div>
 
-    <!-- CONNECTED -->
     <div class="section-label">Connectés</div>
     <div id="connectedList" class="connected-list">Aucun</div>
 
-    <!-- PUSH ROW -->
     <div class="push-row">
-
         <button class="pill-btn" id="speakerLockBtn">
             <i class="fas fa-volume-up"></i>
             <span>HP</span>
@@ -811,7 +782,6 @@
             <div class="push-glow-ring"></div>
             <div class="push-glow-mask"></div>
             <button id="talkBtn">
-                <!-- Push button SVG inline -->
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <radialGradient id="btnBg" cx="42%" cy="35%" r="65%">
@@ -841,32 +811,20 @@
                             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
                         </filter>
                     </defs>
-                    <!-- Outer ring -->
                     <circle cx="50" cy="50" r="49" fill="url(#btnRim)"/>
-                    <!-- Inner shadow -->
                     <circle cx="50" cy="50" r="44" fill="#050e05"/>
-                    <!-- Main body -->
                     <circle cx="50" cy="50" r="42" fill="url(#btnBg)"/>
-                    <!-- Inner face -->
                     <circle cx="50" cy="50" r="38" fill="url(#btnInner)"/>
-                    <!-- Metallic edge highlight -->
                     <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0,255,65,0.25)" stroke-width="1"/>
                     <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(0,255,65,0.1)" stroke-width="0.5"/>
-                    <!-- Gloss top -->
                     <ellipse cx="44" cy="32" rx="20" ry="12" fill="url(#btnGloss)"/>
-                    <!-- Bottom soft light -->
                     <ellipse cx="53" cy="72" rx="22" ry="10" fill="rgba(0,255,65,0.04)"/>
-                    <!-- Microphone icon -->
                     <g transform="translate(50,50)" filter="url(#iconGlow)">
-                        <!-- Mic body -->
                         <rect x="-7" y="-18" width="14" height="22" rx="7" fill="rgba(0,255,65,0.85)" stroke="rgba(0,255,65,1)" stroke-width="0.5"/>
-                        <!-- Mic stand arm -->
                         <path d="M-12 -4 Q-12 12 0 12 Q12 12 12 -4" fill="none" stroke="rgba(0,255,65,0.85)" stroke-width="2.5" stroke-linecap="round"/>
-                        <!-- Stand base -->
                         <line x1="0" y1="12" x2="0" y2="20" stroke="rgba(0,255,65,0.85)" stroke-width="2.5" stroke-linecap="round"/>
                         <line x1="-8" y1="20" x2="8" y2="20" stroke="rgba(0,255,65,0.85)" stroke-width="2.5" stroke-linecap="round"/>
                     </g>
-                    <!-- PUSH label -->
                     <text x="50" y="94" text-anchor="middle" font-family="Orbitron, sans-serif" font-size="7" font-weight="700" letter-spacing="3" fill="rgba(0,255,65,0.6)">PUSH</text>
                 </svg>
             </button>
@@ -876,10 +834,8 @@
             <i class="fas fa-microphone"></i>
             <span>A/V</span>
         </button>
-
     </div>
 
-    <!-- ACTION BAR -->
     <div class="action-bar">
         <div class="action-btn" id="callAudioBtn">
             <div class="action-icon"><i class="fas fa-phone"></i></div>
@@ -891,35 +847,36 @@
         </div>
     </div>
 
-    <!-- VIDEO -->
+    <!-- VIDEO PANEL - Multi-participant -->
     <div id="videoPanel">
-        <video id="remoteVideo" autoplay playsinline></video>
+        <div id="remoteVideosGrid" class="count-1"></div>
         <video id="localVideo" autoplay playsinline muted></video>
         <div class="video-label">LIVE</div>
+        <button id="flipCameraBtn" title="Retourner caméra">
+            <i class="fas fa-sync-alt"></i>
+        </button>
     </div>
 
-    <!-- STATUS -->
     <div id="status">PRÊT</div>
 
-    <!-- DIVIDER -->
     <div class="divider">
         <div class="divider-line"></div>
         <div class="divider-text">Messages</div>
         <div class="divider-line"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="messagesBox" class="messages-box"></div>
+    <div id="uploadProgress" class="upload-progress" style="display:none;"></div>
     <div class="chat-input-row">
         <button class="icon-btn" id="mediaPickerBtn"><i class="fas fa-paperclip"></i></button>
-        <input type="file" id="fileInput" accept="image/*,video/*">
+        <input type="file" id="fileInput" accept="image/*,video/*,.html,.apk,.zip,.pdf,.txt">
         <input type="text" id="smsInput" placeholder="Message chiffré..." maxlength="300">
         <button class="icon-btn" id="sendSmsBtn"><i class="fas fa-paper-plane"></i></button>
     </div>
 
     <div class="footer-info">
         PUSH = Talkie · HP = Son · A/V = Micro<br>
-        Appel / Visio pour raccrocher
+        Appel / Visio pour raccrocher · Max 4 en visio
     </div>
 
 </div>
@@ -977,10 +934,15 @@ function playCallRing()     { playBeep(440, 0.3, 0.25); setTimeout(function(){ p
 var peer, connections = [], localStream = null;
 var mediaRecorder, audioChunks = [];
 var isHost = false, myId = "";
-var currentCall = null, pendingCall = null;
+// Multi-call: map peerId -> call object
+var activeCalls = {};
+var pendingCall = null;
 var speakerMuted = false;
 var microMuted = false;
 var isVideoCall = false;
+var currentFacingMode = 'user'; // for camera flip
+var MAX_VIDEO_PARTICIPANTS = 4;
+var isSending = false; // lock to prevent concurrent large sends
 
 var statusEl = document.getElementById('status');
 var connectedListEl = document.getElementById('connectedList');
@@ -991,7 +953,7 @@ var sendSmsBtn = document.getElementById('sendSmsBtn');
 var callAudioBtn = document.getElementById('callAudioBtn');
 var callVideoBtn = document.getElementById('callVideoBtn');
 var videoPanel = document.getElementById('videoPanel');
-var remoteVideo = document.getElementById('remoteVideo');
+var remoteVideosGrid = document.getElementById('remoteVideosGrid');
 var localVideo = document.getElementById('localVideo');
 var fileInput = document.getElementById('fileInput');
 var mediaPickerBtn = document.getElementById('mediaPickerBtn');
@@ -1006,6 +968,8 @@ var lightboxClose = document.getElementById('lightbox-close');
 var speakerLockBtn = document.getElementById('speakerLockBtn');
 var microMuteBtn = document.getElementById('microMuteBtn');
 var timerPopup = document.getElementById('timerPopup');
+var flipCameraBtn = document.getElementById('flipCameraBtn');
+var uploadProgress = document.getElementById('uploadProgress');
 
 // ===================== CHRONOMÈTRE =====================
 var timerInterval = null;
@@ -1041,16 +1005,31 @@ function updateList() {
     if (connections.length === 0) connectedListEl.innerHTML = "Aucun";
     else connectedListEl.innerHTML = connections.map(c => '▸ ' + c.peer.substring(0,16)).join('<br>');
 }
-function escapeHtml(str) { return str.replace(/[&<>]/g, function(m) { if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if(m==='&') return '&amp;';
+        if(m==='<') return '&lt;';
+        if(m==='>') return '&gt;';
+        return m;
+    });
+}
 function addMessageToChat(content, sender, isOwn, type) {
     isOwn = isOwn || false; type = type || 'text';
     var time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     var msgDiv = document.createElement('div');
     msgDiv.classList.add('msg-bubble', isOwn ? 'msg-right' : 'msg-left');
     var bodyHtml = '';
-    if (type === 'text') bodyHtml = '<div>' + escapeHtml(content) + '</div>';
-    else if (type === 'image') bodyHtml = '<div class="msg-media"><img src="' + content + '" alt="photo" onclick="openLightbox(this.src)"></div>';
-    else if (type === 'video') bodyHtml = '<div class="msg-media"><video src="' + content + '" controls playsinline></video></div>';
+    if (type === 'text') {
+        bodyHtml = '<div>' + escapeHtml(content) + '</div>';
+    } else if (type === 'image') {
+        bodyHtml = '<div class="msg-media"><img src="' + content + '" alt="photo" onclick="openLightbox(this.src)"></div>';
+    } else if (type === 'video') {
+        bodyHtml = '<div class="msg-media"><video src="' + content + '" controls playsinline></video></div>';
+    } else if (type === 'file') {
+        // content = {name, url, size}
+        var sizeStr = content.size ? ' (' + Math.round(content.size/1024) + ' Ko)' : '';
+        bodyHtml = '<div><a class="msg-file-link" href="' + content.url + '" download="' + escapeHtml(content.name) + '"><i class="fas fa-file-download"></i> ' + escapeHtml(content.name) + sizeStr + '</a></div>';
+    }
     msgDiv.innerHTML = '<div class="msg-sender">' + (isOwn ? 'MOI' : escapeHtml(sender)) + '</div>' + bodyHtml + '<div class="msg-time">' + time + '</div>';
     messagesBox.appendChild(msgDiv);
     msgDiv.scrollIntoView({behavior:'smooth', block:'end'});
@@ -1089,16 +1068,179 @@ speakerLockBtn.addEventListener('click', function() {
     }
 });
 
+// ===================== FLIP CAMÉRA =====================
+flipCameraBtn.addEventListener('click', async function() {
+    if (!localStream) return;
+    // Toggle facing mode
+    currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+    try {
+        // Stop existing video tracks
+        localStream.getVideoTracks().forEach(t => t.stop());
+        var newStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: { facingMode: currentFacingMode }
+        });
+        applyMicroMuteToStream(newStream);
+        // Replace video track in all active calls
+        var newVideoTrack = newStream.getVideoTracks()[0];
+        Object.values(activeCalls).forEach(function(call) {
+            if (call && call.peerConnection) {
+                var sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender && newVideoTrack) sender.replaceTrack(newVideoTrack);
+            }
+        });
+        // Update local stream video
+        localStream.getVideoTracks().forEach(t => localStream.removeTrack(t));
+        localStream.addTrack(newVideoTrack);
+        // Also keep audio from new stream in sync
+        newStream.getAudioTracks().forEach(t => newStream.removeTrack(t));
+        localVideo.srcObject = localStream;
+    } catch(e) {
+        statusEl.textContent = "FLIP CAMÉRA ERREUR";
+        console.error(e);
+    }
+});
+
+// ===================== VIDEO GRID MANAGEMENT =====================
+function updateVideoGrid() {
+    var count = Object.keys(activeCalls).length;
+    remoteVideosGrid.className = 'count-' + Math.min(count, 4);
+}
+
+function addRemoteVideoStream(peerId, stream) {
+    // Remove existing if any
+    removeRemoteVideo(peerId);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'remote-video-wrap';
+    wrap.id = 'rvid-' + peerId.replace(/[^a-zA-Z0-9]/g,'_');
+
+    var vid = document.createElement('video');
+    vid.autoplay = true;
+    vid.playsInline = true;
+    vid.srcObject = stream;
+
+    var lbl = document.createElement('div');
+    lbl.className = 'remote-video-label';
+    lbl.textContent = peerId.substring(0,8).toUpperCase();
+
+    wrap.appendChild(vid);
+    wrap.appendChild(lbl);
+    remoteVideosGrid.appendChild(wrap);
+    updateVideoGrid();
+}
+
+function removeRemoteVideo(peerId) {
+    var id = 'rvid-' + peerId.replace(/[^a-zA-Z0-9]/g,'_');
+    var existing = document.getElementById(id);
+    if (existing) existing.remove();
+    updateVideoGrid();
+}
+
 // ===================== P2P DATA =====================
 function broadcast(data, exceptConn) {
     connections.forEach(c => { if (c !== exceptConn && c.open) c.send(data); });
 }
+
+// ===================== CHUNKED TRANSFER =====================
+// For large files: split into chunks to avoid P2P buffer overflow
+var CHUNK_SIZE = 64 * 1024; // 64 KB chunks
+var incomingChunks = {}; // key: transferId -> { chunks:[], total:0, meta:{} }
+
+function sendFileInChunks(conn, arrayBuffer, meta) {
+    return new Promise(function(resolve, reject) {
+        var total = Math.ceil(arrayBuffer.byteLength / CHUNK_SIZE);
+        var transferId = Date.now() + '_' + Math.random().toString(36).substr(2,6);
+
+        // Send metadata first
+        conn.send({ type: 'chunk-start', transferId: transferId, total: total, meta: meta });
+
+        var idx = 0;
+        function sendNext() {
+            if (idx >= total) {
+                conn.send({ type: 'chunk-end', transferId: transferId });
+                resolve();
+                return;
+            }
+            var start = idx * CHUNK_SIZE;
+            var chunk = arrayBuffer.slice(start, start + CHUNK_SIZE);
+            conn.send({ type: 'chunk-data', transferId: transferId, index: idx, data: chunk });
+            idx++;
+            // Small delay to avoid buffer overflow
+            setTimeout(sendNext, 20);
+        }
+        sendNext();
+    });
+}
+
+function broadcastFileInChunks(arrayBuffer, meta, exceptConn) {
+    connections.forEach(function(c) {
+        if (c !== exceptConn && c.open) {
+            sendFileInChunks(c, arrayBuffer, meta);
+        }
+    });
+}
+
+function handleChunkStart(data) {
+    incomingChunks[data.transferId] = {
+        chunks: new Array(data.total),
+        total: data.total,
+        received: 0,
+        meta: data.meta
+    };
+}
+
+function handleChunkData(data) {
+    var t = incomingChunks[data.transferId];
+    if (!t) return;
+    t.chunks[data.index] = data.data;
+    t.received++;
+}
+
+function handleChunkEnd(data, fromConn) {
+    var t = incomingChunks[data.transferId];
+    if (!t) return;
+    delete incomingChunks[data.transferId];
+
+    // Reassemble
+    var totalSize = t.chunks.reduce(function(acc, c) { return acc + (c ? c.byteLength : 0); }, 0);
+    var combined = new Uint8Array(totalSize);
+    var offset = 0;
+    t.chunks.forEach(function(chunk) {
+        if (chunk) {
+            combined.set(new Uint8Array(chunk), offset);
+            offset += chunk.byteLength;
+        }
+    });
+
+    var meta = t.meta;
+    var blob = new Blob([combined], {type: meta.mimeType || 'application/octet-stream'});
+    var url = URL.createObjectURL(blob);
+    var sender = meta.senderId ? meta.senderId.substring(0,10) : '?';
+
+    if (meta.fileType === 'image') {
+        addMessageToChat(url, sender, false, 'image');
+    } else if (meta.fileType === 'video') {
+        addMessageToChat(url, sender, false, 'video');
+    } else {
+        addMessageToChat({name: meta.fileName, url: url, size: totalSize}, sender, false, 'file');
+    }
+    playSmsReceived();
+
+    // Relay if host (forward raw chunks - re-broadcast assembled as single send for simplicity)
+    if (isHost && fromConn) {
+        broadcastFileInChunks(combined.buffer, meta, fromConn);
+    }
+}
+
 function addConnection(conn) {
     if (connections.find(c => c.peer === conn.peer)) return;
     connections.push(conn);
     updateList();
     statusEl.textContent = connections.length + " CONNECTÉ" + (connections.length > 1 ? "S" : "");
+
     conn.on('data', function(data) {
+        // Audio talkie
         if (data.type === 'audio' && data.blob) {
             if (!speakerMuted) {
                 var blob = new Blob([data.blob], {type:'audio/webm'});
@@ -1106,21 +1248,23 @@ function addConnection(conn) {
             }
             if (isHost) broadcast(data, conn);
         }
+        // Text message
         else if (data.type === 'text' && data.text) {
             addMessageToChat(data.text, data.senderId ? data.senderId.substring(0,10) : "?", false);
             playSmsReceived();
             if (isHost) broadcast(data, conn);
         }
-        else if (data.type === 'image' && data.dataUrl) {
-            addMessageToChat(data.dataUrl, data.senderId ? data.senderId.substring(0,10) : "?", false, 'image');
-            playSmsReceived();
-            if (isHost) broadcast(data, conn);
+        // Chunked transfer protocol
+        else if (data.type === 'chunk-start') {
+            handleChunkStart(data);
         }
-        else if (data.type === 'video' && data.dataUrl) {
-            addMessageToChat(data.dataUrl, data.senderId ? data.senderId.substring(0,10) : "?", false, 'video');
-            playSmsReceived();
-            if (isHost) broadcast(data, conn);
+        else if (data.type === 'chunk-data') {
+            handleChunkData(data);
         }
+        else if (data.type === 'chunk-end') {
+            handleChunkEnd(data, conn);
+        }
+        // Speaker mute notification
         else if (data.type === 'speaker-muted') {
             var who = data.senderId ? data.senderId.substring(0,10) : "?";
             var msg = data.muted ? '[' + who + '] Talkie coupé' : '[' + who + '] Talkie actif';
@@ -1128,6 +1272,7 @@ function addConnection(conn) {
             if (isHost) broadcast(data, conn);
         }
     });
+
     conn.on('close', function() {
         connections = connections.filter(c => c !== conn);
         updateList();
@@ -1145,7 +1290,10 @@ function joinRoom() {
         if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     }
     statusEl.textContent = "CONNEXION...";
-    peer = new Peer(room, { debug: 0, config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] } });
+    peer = new Peer(room, {
+        debug: 0,
+        config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] }
+    });
     peer.on('open', function(id) { myId = id; isHost = true; statusEl.textContent = 'HÔTE · "' + room + '"'; updateList(); });
     peer.on('connection', function(conn) { addConnection(conn); });
     peer.on('call', function(call) { handleIncomingCall(call); });
@@ -1154,7 +1302,13 @@ function joinRoom() {
             statusEl.textContent = "CODE PRIS › CLIENT";
             var clientId = room + '_' + Math.random().toString(36).substr(2,6);
             var newPeer = new Peer(clientId, { debug: 0, config: { iceServers: [{ urls:"stun:stun.l.google.com:19302" }] } });
-            newPeer.on('open', function(id) { myId = id; isHost = false; var connToHost = newPeer.connect(room); addConnection(connToHost); statusEl.textContent = 'CLIENT · "' + room + '"'; peer = newPeer; });
+            newPeer.on('open', function(id) {
+                myId = id; isHost = false;
+                var connToHost = newPeer.connect(room);
+                addConnection(connToHost);
+                statusEl.textContent = 'CLIENT · "' + room + '"';
+                peer = newPeer;
+            });
             newPeer.on('call', function(call) { handleIncomingCall(call); });
             newPeer.on('error', function() { statusEl.textContent = "ERREUR CONNEXION"; });
             peer = newPeer;
@@ -1167,8 +1321,10 @@ async function startTalking() {
     if (microMuted) { statusEl.textContent = "MICRO MUET"; return; }
     if (connections.length === 0) { statusEl.textContent = "PERSONNE CONNECTÉ"; return; }
     if (!localStream || !localStream.getAudioTracks().length) {
-        try { localStream = await navigator.mediaDevices.getUserMedia({audio: true}); applyMicroMuteToStream(localStream); }
-        catch(e) { statusEl.textContent = "MICRO INACCESSIBLE"; return; }
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+            applyMicroMuteToStream(localStream);
+        } catch(e) { statusEl.textContent = "MICRO INACCESSIBLE"; return; }
     }
     audioChunks = [];
     if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
@@ -1201,23 +1357,51 @@ talkBtn.addEventListener('pointerup', onRelease);
 talkBtn.addEventListener('pointerleave', onRelease);
 talkBtn.addEventListener('pointercancel', onRelease);
 
-// ===================== APPEL / VISIO =====================
+// ===================== APPEL / VISIO MULTI =====================
 async function startCall(withVideo) {
     if (connections.length === 0) { statusEl.textContent = "PERSONNE CONNECTÉ"; return; }
-    if (currentCall) { hangupCurrentCall(); return; }
+
+    // If already in call, clicking again hangs up
+    if (Object.keys(activeCalls).length > 0) {
+        hangupAllCalls();
+        return;
+    }
+
     isVideoCall = withVideo;
     try {
-        var stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo ? { facingMode: 'user' } : false });
+        var stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: withVideo ? { facingMode: currentFacingMode } : false
+        });
         localStream = stream;
         applyMicroMuteToStream(localStream);
-        if (withVideo) { localVideo.srcObject = stream; videoPanel.style.display = 'block'; }
-        var call = peer.call(connections[0].peer, stream, { metadata: { video: withVideo } });
-        setupCallHandlers(call, withVideo);
-        currentCall = call;
+
+        if (withVideo) {
+            localVideo.srcObject = stream;
+            videoPanel.style.display = 'block';
+        }
+
+        // Call all connected peers (up to max)
+        var targets = connections.slice(0, MAX_VIDEO_PARTICIPANTS);
+        targets.forEach(function(conn) {
+            var call = peer.call(conn.peer, stream, { metadata: { video: withVideo } });
+            activeCalls[conn.peer] = call;
+            setupCallHandlers(call, withVideo, conn.peer);
+        });
+
         statusEl.textContent = withVideo ? "VISIO EN COURS…" : "APPEL EN COURS…";
-    } catch(e) { statusEl.textContent = "CAM/MICRO INACCESSIBLE"; console.error(e); }
+    } catch(e) {
+        statusEl.textContent = "CAM/MICRO INACCESSIBLE";
+        console.error(e);
+    }
 }
+
 function handleIncomingCall(call) {
+    // Check if we are already at max
+    if (Object.keys(activeCalls).length >= MAX_VIDEO_PARTICIPANTS) {
+        call.close();
+        return;
+    }
     pendingCall = call;
     var isVideo = (call.metadata && call.metadata.video) || false;
     isVideoCall = isVideo;
@@ -1226,40 +1410,86 @@ function handleIncomingCall(call) {
     callPopup.classList.add('open');
     playCallRing();
 }
+
 callAcceptBtn.addEventListener('click', async function() {
     callPopup.classList.remove('open');
     if (!pendingCall) return;
     var call = pendingCall; pendingCall = null;
     try {
-        var stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideoCall });
-        localStream = stream;
-        applyMicroMuteToStream(localStream);
-        call.answer(stream);
-        setupCallHandlers(call, isVideoCall);
-        currentCall = call;
+        // Reuse localStream if already active in call
+        if (!localStream) {
+            var stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: isVideoCall ? { facingMode: currentFacingMode } : false
+            });
+            localStream = stream;
+            applyMicroMuteToStream(localStream);
+        }
+        call.answer(localStream);
+        activeCalls[call.peer] = call;
+        setupCallHandlers(call, isVideoCall, call.peer);
         statusEl.textContent = "EN COMMUNICATION";
-        if (isVideoCall) videoPanel.style.display = 'block';
-    } catch(e) { statusEl.textContent = "MICRO/CAM INACCESSIBLE"; console.error(e); }
+        if (isVideoCall) {
+            localVideo.srcObject = localStream;
+            videoPanel.style.display = 'block';
+        }
+    } catch(e) {
+        statusEl.textContent = "MICRO/CAM INACCESSIBLE";
+        console.error(e);
+    }
 });
-callRejectBtn.addEventListener('click', function() { callPopup.classList.remove('open'); if (pendingCall) { pendingCall.close(); pendingCall = null; } });
-function setupCallHandlers(call, withVideo) {
+
+callRejectBtn.addEventListener('click', function() {
+    callPopup.classList.remove('open');
+    if (pendingCall) { pendingCall.close(); pendingCall = null; }
+});
+
+function setupCallHandlers(call, withVideo, peerId) {
     call.on('stream', function(remoteStream) {
-        remoteVideo.srcObject = remoteStream;
-        if (withVideo && localStream) localVideo.srcObject = localStream;
-        if (withVideo) videoPanel.style.display = 'block';
+        if (withVideo) {
+            addRemoteVideoStream(peerId, remoteStream);
+            if (localStream) localVideo.srcObject = localStream;
+            videoPanel.style.display = 'block';
+        } else {
+            // Audio only: play in audio element
+            var audio = new Audio();
+            audio.srcObject = remoteStream;
+            audio.autoplay = true;
+            audio.id = 'audio-' + peerId.replace(/[^a-zA-Z0-9]/g,'_');
+            document.body.appendChild(audio);
+        }
         statusEl.textContent = withVideo ? "VISIO ACTIVE" : "EN COMMUNICATION";
     });
-    call.on('close', function() { cleanupCall(); });
-    call.on('error', function() { cleanupCall(); statusEl.textContent = "ERREUR APPEL"; });
+    call.on('close', function() { cleanupCall(peerId, withVideo); });
+    call.on('error', function() { cleanupCall(peerId, withVideo); statusEl.textContent = "ERREUR APPEL"; });
 }
-function hangupCurrentCall() { if (currentCall) currentCall.close(); cleanupCall(); }
-function cleanupCall() {
-    if (currentCall) currentCall = null;
-    remoteVideo.srcObject = null; localVideo.srcObject = null;
-    videoPanel.style.display = 'none';
-    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-    statusEl.textContent = connections.length ? connections.length + " CONNECTÉ(S)" : "SEUL";
+
+function hangupAllCalls() {
+    Object.keys(activeCalls).forEach(function(pid) {
+        try { activeCalls[pid].close(); } catch(e){}
+        cleanupCall(pid, isVideoCall);
+    });
 }
+
+function cleanupCall(peerId, withVideo) {
+    delete activeCalls[peerId];
+    if (withVideo) removeRemoteVideo(peerId);
+
+    // Remove audio element if any
+    var audioEl = document.getElementById('audio-' + (peerId||'').replace(/[^a-zA-Z0-9]/g,'_'));
+    if (audioEl) audioEl.remove();
+
+    // If no more calls active, cleanup
+    if (Object.keys(activeCalls).length === 0) {
+        videoPanel.style.display = 'none';
+        remoteVideosGrid.innerHTML = '';
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+        statusEl.textContent = connections.length ? connections.length + " CONNECTÉ(S)" : "SEUL";
+    } else {
+        updateVideoGrid();
+    }
+}
+
 callAudioBtn.addEventListener('click', function() { startCall(false); });
 callVideoBtn.addEventListener('click', function() { startCall(true); });
 
@@ -1276,26 +1506,117 @@ function sendTextMessage(content) {
 function handleSendSms() { var msg = smsInput.value.trim(); if (msg) { sendTextMessage(msg); smsInput.value = ""; } }
 sendSmsBtn.addEventListener('click', handleSendSms);
 smsInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); handleSendSms(); } });
-mediaPickerBtn.addEventListener('click', function() { fileInput.click(); });
-fileInput.addEventListener('change', function() {
+
+mediaPickerBtn.addEventListener('click', function() { if (!isSending) fileInput.click(); });
+
+fileInput.addEventListener('change', async function() {
     var file = fileInput.files[0];
     if (!file) return;
     if (connections.length === 0) { addMessageToChat("Personne connectée", "SYS"); return; }
-    var MAX_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_SIZE) { addMessageToChat("Fichier trop lourd (max 5 Mo)", "SYS", true); fileInput.value = ''; return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var dataUrl = e.target.result;
-        var type = file.type.startsWith('image/') ? 'image' : 'video';
-        addMessageToChat(dataUrl, myId.substring(0,10), true, type);
-        playSmsSent();
-        var payload = { type:type, dataUrl:dataUrl, senderId:myId, timestamp:Date.now() };
-        if (isHost) broadcast(payload);
-        else if (connections[0] && connections[0].open) connections[0].send(payload);
-    };
-    reader.readAsDataURL(file);
-    fileInput.value = '';
+    if (isSending) { addMessageToChat("Envoi en cours, patientez...", "SYS", true); fileInput.value=''; return; }
+
+    var MAX_SIZE = 20 * 1024 * 1024; // 20 MB max
+    if (file.size > MAX_SIZE) {
+        addMessageToChat("Fichier trop lourd (max 20 Mo)", "SYS", true);
+        fileInput.value = '';
+        return;
+    }
+
+    isSending = true;
+    uploadProgress.style.display = 'block';
+    uploadProgress.textContent = 'Envoi en cours…';
+
+    try {
+        var isImage = file.type.startsWith('image/');
+        var isVideo = file.type.startsWith('video/');
+        var fileType = isImage ? 'image' : (isVideo ? 'video' : 'file');
+
+        // For images: compress before sending to avoid buffer issues
+        if (isImage) {
+            var compressedUrl = await compressImage(file, 1200, 0.75);
+            // Convert data URL back to ArrayBuffer
+            var base64 = compressedUrl.split(',')[1];
+            var binary = atob(base64);
+            var ab = new ArrayBuffer(binary.length);
+            var view = new Uint8Array(ab);
+            for (var i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
+
+            // Show locally (use compressed)
+            addMessageToChat(compressedUrl, myId.substring(0,10), true, 'image');
+            playSmsSent();
+
+            var meta = { fileType: 'image', mimeType: 'image/jpeg', senderId: myId, fileName: file.name };
+            if (isHost) {
+                broadcastFileInChunks(ab, meta, null);
+            } else if (connections[0] && connections[0].open) {
+                await sendFileInChunks(connections[0], ab, meta);
+            }
+        } else {
+            // Video or file: read as ArrayBuffer and chunk it
+            var ab = await readFileAsArrayBuffer(file);
+            var meta = {
+                fileType: fileType,
+                mimeType: file.type || 'application/octet-stream',
+                senderId: myId,
+                fileName: file.name
+            };
+
+            if (isVideo) {
+                // Show locally
+                var localUrl = URL.createObjectURL(file);
+                addMessageToChat(localUrl, myId.substring(0,10), true, 'video');
+            } else {
+                var localUrl = URL.createObjectURL(file);
+                addMessageToChat({name: file.name, url: localUrl, size: file.size}, myId.substring(0,10), true, 'file');
+            }
+            playSmsSent();
+
+            if (isHost) {
+                broadcastFileInChunks(ab, meta, null);
+            } else if (connections[0] && connections[0].open) {
+                await sendFileInChunks(connections[0], ab, meta);
+            }
+        }
+    } catch(e) {
+        addMessageToChat("Erreur envoi fichier", "SYS", true);
+        console.error(e);
+    } finally {
+        isSending = false;
+        uploadProgress.style.display = 'none';
+        fileInput.value = '';
+    }
 });
+
+function readFileAsArrayBuffer(file) {
+    return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function(e) { resolve(e.target.result); };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+function compressImage(file, maxWidth, quality) {
+    return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = new Image();
+            img.onload = function() {
+                var canvas = document.createElement('canvas');
+                var w = img.width, h = img.height;
+                if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 window.joinRoom = joinRoom;
 window.openLightbox = openLightbox;
 window.addEventListener('beforeunload', function() {
