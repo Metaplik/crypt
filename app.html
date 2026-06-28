@@ -123,7 +123,31 @@
         .input-group {
             display: flex;
             gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        /* MODIF 1 : bouton RESET rouge */
+        .btn-reset {
+            display: block;
+            width: 100%;
+            padding: 5px 0;
             margin-bottom: 10px;
+            background: linear-gradient(135deg, rgba(255,42,42,0.13), rgba(120,0,0,0.08));
+            border: 1px solid rgba(255,42,42,0.5);
+            border-radius: 6px;
+            color: var(--red);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .btn-reset:active {
+            background: rgba(255,42,42,0.22);
+            box-shadow: 0 0 14px rgba(255,42,42,0.3);
+            transform: scale(0.97);
         }
 
         input[type=text] {
@@ -394,7 +418,7 @@
             margin: 2px 0 8px;
         }
 
-        /* ===== VIDEO PANEL - FIXED ===== */
+        /* ===== VIDEO PANEL ===== */
         #videoPanel {
             display: none;
             margin: 8px 0;
@@ -404,12 +428,10 @@
             position: relative;
             background: #000;
             box-shadow: 0 0 20px rgba(0,255,65,0.1);
-            /* Half screen height approx */
             height: 50vh;
             min-height: 260px;
         }
 
-        /* Multi-participant grid */
         #remoteVideosGrid {
             display: grid;
             width: 100%;
@@ -418,7 +440,6 @@
             background: #000;
         }
 
-        /* Grid layouts depending on participant count */
         #remoteVideosGrid.count-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
         #remoteVideosGrid.count-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
         #remoteVideosGrid.count-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
@@ -448,6 +469,7 @@
             border-radius: 4px;
         }
 
+        /* MODIF 2 : miniature locale cliquable pour swap */
         #localVideo {
             position: absolute; bottom: 8px; right: 8px;
             width: 76px; height: 56px;
@@ -456,7 +478,13 @@
             border-radius: 8px;
             background: #111;
             z-index: 5;
+            cursor: pointer;
+            transition: box-shadow 0.15s;
         }
+        #localVideo:active {
+            box-shadow: 0 0 16px rgba(0,255,65,0.7);
+        }
+
         .video-label {
             position: absolute; top: 8px; left: 10px;
             font-size: 11px;
@@ -467,7 +495,6 @@
             z-index: 5;
         }
 
-        /* Flip camera button */
         #flipCameraBtn {
             position: absolute;
             bottom: 8px; left: 8px;
@@ -527,13 +554,16 @@
             word-break: break-word;
             font-family: 'Share Tech Mono', monospace;
         }
+
+        /* MODIF 3 : msg-left = rose fluo pour le correspondant */
         .msg-left {
             align-self: flex-start;
-            background: rgba(0,255,65,0.06);
-            border: 1px solid rgba(0,255,65,0.14);
-            border-left: 2px solid var(--neon2);
-            color: var(--txt);
+            background: rgba(255, 0, 180, 0.08);
+            border: 1px solid rgba(255, 0, 200, 0.25);
+            border-left: 2px solid #ff2ef7;
+            color: #ffb3fc;
         }
+        /* msg-right = vert (inchangé) */
         .msg-right {
             align-self: flex-end;
             background: rgba(0,255,65,0.1);
@@ -541,12 +571,12 @@
             border-right: 2px solid var(--neon);
             color: #e6fff0;
         }
+
         .msg-sender { font-size: 10px; opacity: 0.6; margin-bottom: 2px; letter-spacing: 1px; }
         .msg-time { font-size: 10px; text-align: right; margin-top: 3px; opacity: 0.4; }
         .msg-media img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; border: 1px solid var(--border); }
         .msg-media video { max-width: 100%; border-radius: 8px; margin-top: 4px; border: 1px solid var(--border); }
 
-        /* File download link */
         .msg-file-link {
             display: inline-flex;
             align-items: center;
@@ -606,7 +636,6 @@
             transform: scale(0.93);
         }
 
-        /* Upload progress indicator */
         .upload-progress {
             font-size: 11px;
             color: var(--neon-dim);
@@ -767,6 +796,8 @@
         <input type="text" id="roomName" placeholder="CODE ACCES" autocomplete="off">
         <button class="btn-join" onclick="joinRoom()">JOIN</button>
     </div>
+    <!-- MODIF 1 : bouton RESET -->
+    <button class="btn-reset" onclick="document.getElementById('roomName').value=''">RESET CODE</button>
 
     <div class="section-label">Connectés</div>
     <div id="connectedList" class="connected-list">Aucun</div>
@@ -847,10 +878,11 @@
         </div>
     </div>
 
-    <!-- VIDEO PANEL - Multi-participant -->
+    <!-- VIDEO PANEL -->
     <div id="videoPanel">
         <div id="remoteVideosGrid" class="count-1"></div>
-        <video id="localVideo" autoplay playsinline muted></video>
+        <!-- MODIF 2 : onclick swap sur la miniature locale -->
+        <video id="localVideo" autoplay playsinline muted onclick="swapVideo()"></video>
         <div class="video-label">LIVE</div>
         <button id="flipCameraBtn" title="Retourner caméra">
             <i class="fas fa-sync-alt"></i>
@@ -910,18 +942,31 @@ function drawMatrix() {
 window.addEventListener('resize', resizeMatrix);
 resizeMatrix(); drawMatrix();
 
+// ===================== AUDIOCONTEXT GLOBAL (FIX AUTOPLAY) =====================
+// MODIF BUG 1 : on crée un AudioContext partagé et on le resume au premier clic
+var _sharedAC = null;
+function getAudioContext() {
+    if (!_sharedAC) _sharedAC = new (window.AudioContext || window.webkitAudioContext)();
+    if (_sharedAC.state === 'suspended') _sharedAC.resume();
+    return _sharedAC;
+}
+// Débloque l'AudioContext au premier clic utilisateur sur la page
+document.addEventListener('click', function unlockAC() {
+    getAudioContext();
+    document.removeEventListener('click', unlockAC);
+}, { once: true });
+
 // ===================== SONS =====================
 function playBeep(freq, duration, vol) {
     vol = vol || 0.2;
     try {
-        var ac = new (window.AudioContext || window.webkitAudioContext)();
+        var ac = getAudioContext();
         var osc = ac.createOscillator(), gain = ac.createGain();
         osc.connect(gain); gain.connect(ac.destination);
         osc.frequency.value = freq; gain.gain.value = vol; osc.type = 'sine';
         osc.start();
         gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + duration);
         osc.stop(ac.currentTime + duration);
-        setTimeout(function(){ ac.close(); }, duration * 1000 + 100);
     } catch(e) {}
 }
 function playTalkieStart()  { playBeep(880, 0.08, 0.22); }
@@ -934,15 +979,19 @@ function playCallRing()     { playBeep(440, 0.3, 0.25); setTimeout(function(){ p
 var peer, connections = [], localStream = null;
 var mediaRecorder, audioChunks = [];
 var isHost = false, myId = "";
-// Multi-call: map peerId -> call object
 var activeCalls = {};
 var pendingCall = null;
 var speakerMuted = false;
 var microMuted = false;
 var isVideoCall = false;
-var currentFacingMode = 'user'; // for camera flip
+var currentFacingMode = 'user';
 var MAX_VIDEO_PARTICIPANTS = 4;
-var isSending = false; // lock to prevent concurrent large sends
+var isSending = false;
+
+// MODIF BUG 3 : ping/pong pour détecter les connexions mortes
+var PING_INTERVAL = 15000; // 15s
+var pingTimers = {}; // peerId -> intervalId
+var pongTimeouts = {}; // peerId -> timeoutId
 
 var statusEl = document.getElementById('status');
 var connectedListEl = document.getElementById('connectedList');
@@ -1013,6 +1062,20 @@ function escapeHtml(str) {
         return m;
     });
 }
+
+// MODIF BUG 2 : pool de blob URLs pour pouvoir les révoquer
+var _blobUrlPool = [];
+function createAndTrackBlobUrl(blob) {
+    var url = URL.createObjectURL(blob);
+    _blobUrlPool.push(url);
+    // Garder max 30 blobs en mémoire, révoquer les plus anciens
+    if (_blobUrlPool.length > 30) {
+        var old = _blobUrlPool.shift();
+        try { URL.revokeObjectURL(old); } catch(e) {}
+    }
+    return url;
+}
+
 function addMessageToChat(content, sender, isOwn, type) {
     isOwn = isOwn || false; type = type || 'text';
     var time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1026,7 +1089,6 @@ function addMessageToChat(content, sender, isOwn, type) {
     } else if (type === 'video') {
         bodyHtml = '<div class="msg-media"><video src="' + content + '" controls playsinline></video></div>';
     } else if (type === 'file') {
-        // content = {name, url, size}
         var sizeStr = content.size ? ' (' + Math.round(content.size/1024) + ' Ko)' : '';
         bodyHtml = '<div><a class="msg-file-link" href="' + content.url + '" download="' + escapeHtml(content.name) + '"><i class="fas fa-file-download"></i> ' + escapeHtml(content.name) + sizeStr + '</a></div>';
     }
@@ -1037,6 +1099,35 @@ function addMessageToChat(content, sender, isOwn, type) {
 function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('open'); }
 lightboxClose.addEventListener('click', function(){ lightbox.classList.remove('open'); });
 lightbox.addEventListener('click', function(e){ if (e.target === lightbox) lightbox.classList.remove('open'); });
+
+// ===================== MODIF 2 : SWAP VIDÉO =====================
+var videoSwapped = false;
+function swapVideo() {
+    videoSwapped = !videoSwapped;
+    if (videoSwapped) {
+        // Moi dans le grand écran, correspondant dans la miniature
+        var firstWrap = remoteVideosGrid.querySelector('.remote-video-wrap');
+        if (!firstWrap) { videoSwapped = false; return; }
+        var remoteVid = firstWrap.querySelector('video');
+        // Échanger les srcObject
+        var tmpSrc = localVideo.srcObject;
+        localVideo.srcObject = remoteVid.srcObject;
+        remoteVid.srcObject = tmpSrc;
+        // Retirer le muted du local (maintenant dans le grand écran) → garder muet pour éviter écho
+        localVideo.muted = true;
+        remoteVid.muted = false;
+    } else {
+        // Remettre dans l'ordre initial
+        var firstWrap = remoteVideosGrid.querySelector('.remote-video-wrap');
+        if (!firstWrap) { videoSwapped = false; return; }
+        var remoteVid = firstWrap.querySelector('video');
+        var tmpSrc = localVideo.srcObject;
+        localVideo.srcObject = remoteVid.srcObject;
+        remoteVid.srcObject = tmpSrc;
+        localVideo.muted = true;
+        remoteVid.muted = false;
+    }
+}
 
 // ===================== MUTE MICRO =====================
 function applyMicroMuteToStream(stream) {
@@ -1071,17 +1162,14 @@ speakerLockBtn.addEventListener('click', function() {
 // ===================== FLIP CAMÉRA =====================
 flipCameraBtn.addEventListener('click', async function() {
     if (!localStream) return;
-    // Toggle facing mode
     currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
     try {
-        // Stop existing video tracks
         localStream.getVideoTracks().forEach(t => t.stop());
         var newStream = await navigator.mediaDevices.getUserMedia({
             audio: true,
             video: { facingMode: currentFacingMode }
         });
         applyMicroMuteToStream(newStream);
-        // Replace video track in all active calls
         var newVideoTrack = newStream.getVideoTracks()[0];
         Object.values(activeCalls).forEach(function(call) {
             if (call && call.peerConnection) {
@@ -1089,10 +1177,8 @@ flipCameraBtn.addEventListener('click', async function() {
                 if (sender && newVideoTrack) sender.replaceTrack(newVideoTrack);
             }
         });
-        // Update local stream video
         localStream.getVideoTracks().forEach(t => localStream.removeTrack(t));
         localStream.addTrack(newVideoTrack);
-        // Also keep audio from new stream in sync
         newStream.getAudioTracks().forEach(t => newStream.removeTrack(t));
         localVideo.srcObject = localStream;
     } catch(e) {
@@ -1108,22 +1194,17 @@ function updateVideoGrid() {
 }
 
 function addRemoteVideoStream(peerId, stream) {
-    // Remove existing if any
     removeRemoteVideo(peerId);
-
     var wrap = document.createElement('div');
     wrap.className = 'remote-video-wrap';
     wrap.id = 'rvid-' + peerId.replace(/[^a-zA-Z0-9]/g,'_');
-
     var vid = document.createElement('video');
     vid.autoplay = true;
     vid.playsInline = true;
     vid.srcObject = stream;
-
     var lbl = document.createElement('div');
     lbl.className = 'remote-video-label';
     lbl.textContent = peerId.substring(0,8).toUpperCase();
-
     wrap.appendChild(vid);
     wrap.appendChild(lbl);
     remoteVideosGrid.appendChild(wrap);
@@ -1142,19 +1223,34 @@ function broadcast(data, exceptConn) {
     connections.forEach(c => { if (c !== exceptConn && c.open) c.send(data); });
 }
 
+// ===================== PING/PONG (FIX BUG 3) =====================
+function startPing(conn) {
+    stopPing(conn.peer);
+    pingTimers[conn.peer] = setInterval(function() {
+        if (!conn.open) { stopPing(conn.peer); return; }
+        conn.send({ type: 'ping' });
+        // Si pas de pong dans 8s → connexion morte
+        pongTimeouts[conn.peer] = setTimeout(function() {
+            console.warn('CRYPT: pong timeout pour', conn.peer);
+            conn.close();
+        }, 8000);
+    }, PING_INTERVAL);
+}
+
+function stopPing(peerId) {
+    if (pingTimers[peerId]) { clearInterval(pingTimers[peerId]); delete pingTimers[peerId]; }
+    if (pongTimeouts[peerId]) { clearTimeout(pongTimeouts[peerId]); delete pongTimeouts[peerId]; }
+}
+
 // ===================== CHUNKED TRANSFER =====================
-// For large files: split into chunks to avoid P2P buffer overflow
-var CHUNK_SIZE = 64 * 1024; // 64 KB chunks
-var incomingChunks = {}; // key: transferId -> { chunks:[], total:0, meta:{} }
+var CHUNK_SIZE = 64 * 1024;
+var incomingChunks = {};
 
 function sendFileInChunks(conn, arrayBuffer, meta) {
     return new Promise(function(resolve, reject) {
         var total = Math.ceil(arrayBuffer.byteLength / CHUNK_SIZE);
         var transferId = Date.now() + '_' + Math.random().toString(36).substr(2,6);
-
-        // Send metadata first
         conn.send({ type: 'chunk-start', transferId: transferId, total: total, meta: meta });
-
         var idx = 0;
         function sendNext() {
             if (idx >= total) {
@@ -1166,7 +1262,6 @@ function sendFileInChunks(conn, arrayBuffer, meta) {
             var chunk = arrayBuffer.slice(start, start + CHUNK_SIZE);
             conn.send({ type: 'chunk-data', transferId: transferId, index: idx, data: chunk });
             idx++;
-            // Small delay to avoid buffer overflow
             setTimeout(sendNext, 20);
         }
         sendNext();
@@ -1202,7 +1297,6 @@ function handleChunkEnd(data, fromConn) {
     if (!t) return;
     delete incomingChunks[data.transferId];
 
-    // Reassemble
     var totalSize = t.chunks.reduce(function(acc, c) { return acc + (c ? c.byteLength : 0); }, 0);
     var combined = new Uint8Array(totalSize);
     var offset = 0;
@@ -1215,7 +1309,8 @@ function handleChunkEnd(data, fromConn) {
 
     var meta = t.meta;
     var blob = new Blob([combined], {type: meta.mimeType || 'application/octet-stream'});
-    var url = URL.createObjectURL(blob);
+    // MODIF BUG 2 : utiliser le pool de blob URLs
+    var url = createAndTrackBlobUrl(blob);
     var sender = meta.senderId ? meta.senderId.substring(0,10) : '?';
 
     if (meta.fileType === 'image') {
@@ -1227,7 +1322,6 @@ function handleChunkEnd(data, fromConn) {
     }
     playSmsReceived();
 
-    // Relay if host (forward raw chunks - re-broadcast assembled as single send for simplicity)
     if (isHost && fromConn) {
         broadcastFileInChunks(combined.buffer, meta, fromConn);
     }
@@ -1239,7 +1333,24 @@ function addConnection(conn) {
     updateList();
     statusEl.textContent = connections.length + " CONNECTÉ" + (connections.length > 1 ? "S" : "");
 
+    // MODIF BUG 3 : démarrer le ping dès que la connexion est ouverte
+    conn.on('open', function() { startPing(conn); });
+    if (conn.open) startPing(conn); // déjà ouverte (cas host qui reçoit)
+
     conn.on('data', function(data) {
+        // Ping/pong
+        if (data.type === 'ping') {
+            if (conn.open) conn.send({ type: 'pong' });
+            return;
+        }
+        if (data.type === 'pong') {
+            // Annuler le timeout de pong
+            if (pongTimeouts[conn.peer]) {
+                clearTimeout(pongTimeouts[conn.peer]);
+                delete pongTimeouts[conn.peer];
+            }
+            return;
+        }
         // Audio talkie
         if (data.type === 'audio' && data.blob) {
             if (!speakerMuted) {
@@ -1248,23 +1359,14 @@ function addConnection(conn) {
             }
             if (isHost) broadcast(data, conn);
         }
-        // Text message
         else if (data.type === 'text' && data.text) {
             addMessageToChat(data.text, data.senderId ? data.senderId.substring(0,10) : "?", false);
             playSmsReceived();
             if (isHost) broadcast(data, conn);
         }
-        // Chunked transfer protocol
-        else if (data.type === 'chunk-start') {
-            handleChunkStart(data);
-        }
-        else if (data.type === 'chunk-data') {
-            handleChunkData(data);
-        }
-        else if (data.type === 'chunk-end') {
-            handleChunkEnd(data, conn);
-        }
-        // Speaker mute notification
+        else if (data.type === 'chunk-start') { handleChunkStart(data); }
+        else if (data.type === 'chunk-data')  { handleChunkData(data); }
+        else if (data.type === 'chunk-end')   { handleChunkEnd(data, conn); }
         else if (data.type === 'speaker-muted') {
             var who = data.senderId ? data.senderId.substring(0,10) : "?";
             var msg = data.muted ? '[' + who + '] Talkie coupé' : '[' + who + '] Talkie actif';
@@ -1274,6 +1376,12 @@ function addConnection(conn) {
     });
 
     conn.on('close', function() {
+        stopPing(conn.peer);
+        // MODIF BUG 3 : nettoyer activeCalls si une connexion data tombe
+        if (activeCalls[conn.peer]) {
+            try { activeCalls[conn.peer].close(); } catch(e) {}
+            cleanupCall(conn.peer, isVideoCall);
+        }
         connections = connections.filter(c => c !== conn);
         updateList();
         statusEl.textContent = connections.length ? connections.length + " CONNECTÉ(S)" : "SEUL";
@@ -1284,6 +1392,8 @@ function addConnection(conn) {
 function joinRoom() {
     var room = document.getElementById('roomName').value.trim();
     if (!room) { statusEl.textContent = "ENTRER UN CODE"; return; }
+    // Débloquer l'AudioContext au clic JOIN
+    getAudioContext();
     if (peer) {
         connections.forEach(c => { try { c.close(); } catch(e){} });
         peer.destroy(); connections = [];
@@ -1360,13 +1470,7 @@ talkBtn.addEventListener('pointercancel', onRelease);
 // ===================== APPEL / VISIO MULTI =====================
 async function startCall(withVideo) {
     if (connections.length === 0) { statusEl.textContent = "PERSONNE CONNECTÉ"; return; }
-
-    // If already in call, clicking again hangs up
-    if (Object.keys(activeCalls).length > 0) {
-        hangupAllCalls();
-        return;
-    }
-
+    if (Object.keys(activeCalls).length > 0) { hangupAllCalls(); return; }
     isVideoCall = withVideo;
     try {
         var stream = await navigator.mediaDevices.getUserMedia({
@@ -1375,20 +1479,17 @@ async function startCall(withVideo) {
         });
         localStream = stream;
         applyMicroMuteToStream(localStream);
-
         if (withVideo) {
             localVideo.srcObject = stream;
             videoPanel.style.display = 'block';
+            videoSwapped = false;
         }
-
-        // Call all connected peers (up to max)
         var targets = connections.slice(0, MAX_VIDEO_PARTICIPANTS);
         targets.forEach(function(conn) {
             var call = peer.call(conn.peer, stream, { metadata: { video: withVideo } });
             activeCalls[conn.peer] = call;
             setupCallHandlers(call, withVideo, conn.peer);
         });
-
         statusEl.textContent = withVideo ? "VISIO EN COURS…" : "APPEL EN COURS…";
     } catch(e) {
         statusEl.textContent = "CAM/MICRO INACCESSIBLE";
@@ -1397,11 +1498,7 @@ async function startCall(withVideo) {
 }
 
 function handleIncomingCall(call) {
-    // Check if we are already at max
-    if (Object.keys(activeCalls).length >= MAX_VIDEO_PARTICIPANTS) {
-        call.close();
-        return;
-    }
+    if (Object.keys(activeCalls).length >= MAX_VIDEO_PARTICIPANTS) { call.close(); return; }
     pendingCall = call;
     var isVideo = (call.metadata && call.metadata.video) || false;
     isVideoCall = isVideo;
@@ -1416,7 +1513,6 @@ callAcceptBtn.addEventListener('click', async function() {
     if (!pendingCall) return;
     var call = pendingCall; pendingCall = null;
     try {
-        // Reuse localStream if already active in call
         if (!localStream) {
             var stream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
@@ -1432,6 +1528,7 @@ callAcceptBtn.addEventListener('click', async function() {
         if (isVideoCall) {
             localVideo.srcObject = localStream;
             videoPanel.style.display = 'block';
+            videoSwapped = false;
         }
     } catch(e) {
         statusEl.textContent = "MICRO/CAM INACCESSIBLE";
@@ -1451,7 +1548,6 @@ function setupCallHandlers(call, withVideo, peerId) {
             if (localStream) localVideo.srcObject = localStream;
             videoPanel.style.display = 'block';
         } else {
-            // Audio only: play in audio element
             var audio = new Audio();
             audio.srcObject = remoteStream;
             audio.autoplay = true;
@@ -1474,15 +1570,12 @@ function hangupAllCalls() {
 function cleanupCall(peerId, withVideo) {
     delete activeCalls[peerId];
     if (withVideo) removeRemoteVideo(peerId);
-
-    // Remove audio element if any
     var audioEl = document.getElementById('audio-' + (peerId||'').replace(/[^a-zA-Z0-9]/g,'_'));
     if (audioEl) audioEl.remove();
-
-    // If no more calls active, cleanup
     if (Object.keys(activeCalls).length === 0) {
         videoPanel.style.display = 'none';
         remoteVideosGrid.innerHTML = '';
+        videoSwapped = false;
         if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
         statusEl.textContent = connections.length ? connections.length + " CONNECTÉ(S)" : "SEUL";
     } else {
@@ -1514,68 +1607,44 @@ fileInput.addEventListener('change', async function() {
     if (!file) return;
     if (connections.length === 0) { addMessageToChat("Personne connectée", "SYS"); return; }
     if (isSending) { addMessageToChat("Envoi en cours, patientez...", "SYS", true); fileInput.value=''; return; }
-
-    var MAX_SIZE = 20 * 1024 * 1024; // 20 MB max
+    var MAX_SIZE = 20 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
         addMessageToChat("Fichier trop lourd (max 20 Mo)", "SYS", true);
         fileInput.value = '';
         return;
     }
-
     isSending = true;
     uploadProgress.style.display = 'block';
     uploadProgress.textContent = 'Envoi en cours…';
-
     try {
         var isImage = file.type.startsWith('image/');
         var isVideo = file.type.startsWith('video/');
         var fileType = isImage ? 'image' : (isVideo ? 'video' : 'file');
-
-        // For images: compress before sending to avoid buffer issues
         if (isImage) {
             var compressedUrl = await compressImage(file, 1200, 0.75);
-            // Convert data URL back to ArrayBuffer
             var base64 = compressedUrl.split(',')[1];
             var binary = atob(base64);
             var ab = new ArrayBuffer(binary.length);
             var view = new Uint8Array(ab);
             for (var i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
-
-            // Show locally (use compressed)
             addMessageToChat(compressedUrl, myId.substring(0,10), true, 'image');
             playSmsSent();
-
             var meta = { fileType: 'image', mimeType: 'image/jpeg', senderId: myId, fileName: file.name };
-            if (isHost) {
-                broadcastFileInChunks(ab, meta, null);
-            } else if (connections[0] && connections[0].open) {
-                await sendFileInChunks(connections[0], ab, meta);
-            }
+            if (isHost) { broadcastFileInChunks(ab, meta, null); }
+            else if (connections[0] && connections[0].open) { await sendFileInChunks(connections[0], ab, meta); }
         } else {
-            // Video or file: read as ArrayBuffer and chunk it
             var ab = await readFileAsArrayBuffer(file);
-            var meta = {
-                fileType: fileType,
-                mimeType: file.type || 'application/octet-stream',
-                senderId: myId,
-                fileName: file.name
-            };
-
+            var meta = { fileType: fileType, mimeType: file.type || 'application/octet-stream', senderId: myId, fileName: file.name };
+            // MODIF BUG 2 : utiliser le pool pour les blobs locaux aussi
+            var localUrl = createAndTrackBlobUrl(file.type.startsWith('video/') ? new Blob([ab], {type:file.type}) : file);
             if (isVideo) {
-                // Show locally
-                var localUrl = URL.createObjectURL(file);
                 addMessageToChat(localUrl, myId.substring(0,10), true, 'video');
             } else {
-                var localUrl = URL.createObjectURL(file);
                 addMessageToChat({name: file.name, url: localUrl, size: file.size}, myId.substring(0,10), true, 'file');
             }
             playSmsSent();
-
-            if (isHost) {
-                broadcastFileInChunks(ab, meta, null);
-            } else if (connections[0] && connections[0].open) {
-                await sendFileInChunks(connections[0], ab, meta);
-            }
+            if (isHost) { broadcastFileInChunks(ab, meta, null); }
+            else if (connections[0] && connections[0].open) { await sendFileInChunks(connections[0], ab, meta); }
         }
     } catch(e) {
         addMessageToChat("Erreur envoi fichier", "SYS", true);
@@ -1619,6 +1688,7 @@ function compressImage(file, maxWidth, quality) {
 
 window.joinRoom = joinRoom;
 window.openLightbox = openLightbox;
+window.swapVideo = swapVideo;
 window.addEventListener('beforeunload', function() {
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     if (peer) peer.destroy();
@@ -1626,3 +1696,4 @@ window.addEventListener('beforeunload', function() {
 </script>
 </body>
 </html>
+
