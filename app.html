@@ -745,7 +745,24 @@
 
         <div style="width:1px;height:28px;background:linear-gradient(to bottom,transparent,rgba(0,255,65,0.4),transparent);margin:4px 0;"></div>
 
-        <div style="font-size:9px;letter-spacing:3px;color:#006618;">CODE D'ACCÈS</div>
+        <div style="font-size:9px;letter-spacing:3px;color:#006618;">IDENTIFIANT</div>
+
+        <input id="crypt-nom-input" type="text" placeholder="NOM D'UTILISATEUR" autocomplete="off" style="
+            padding:13px 20px;
+            background:rgba(0,255,65,0.04);
+            border:1px solid rgba(0,255,65,0.28);
+            border-radius:10px;
+            color:#00ff41;
+            font-size:15px;
+            font-family:'Share Tech Mono',monospace;
+            letter-spacing:3px;
+            outline:none;
+            text-align:center;
+            width:210px;
+            transition:border-color 0.2s,box-shadow 0.2s;
+        ">
+
+        <div style="font-size:9px;letter-spacing:3px;color:#006618;margin-top:4px;">CODE D'ACCÈS</div>
 
         <input id="crypt-input" type="password" placeholder="••••••" autocomplete="off" style="
             padding:13px 20px;
@@ -815,22 +832,24 @@
 
 // ===== SYSTÈME DE SÉCURITÉ FETCH JSON =====
 (function() {
-    var input  = document.getElementById('crypt-input');
-    var errEl  = document.getElementById('crypt-error');
-    var btn    = document.getElementById('crypt-gate-btn');
-    var gate   = document.getElementById('crypt-gate');
+    var inputNom = document.getElementById('crypt-nom-input');
+    var input    = document.getElementById('crypt-input');
+    var errEl    = document.getElementById('crypt-error');
+    var btn      = document.getElementById('crypt-gate-btn');
+    var gate     = document.getElementById('crypt-gate');
 
-    function showError(msg, color) {
-        color = color || '#ff2a2a';
+    function showError(msg) {
         errEl.textContent = msg;
-        errEl.style.color = color;
+        errEl.style.color = '#ff2a2a';
         input.value = '';
-        input.style.borderColor = color;
-        input.style.boxShadow = '0 0 12px ' + color + '44';
+        input.style.borderColor = '#ff2a2a';
+        input.style.boxShadow = '0 0 12px #ff2a2a44';
+        if (inputNom) { inputNom.style.borderColor = '#ff2a2a'; inputNom.style.boxShadow = '0 0 12px #ff2a2a44'; }
         setTimeout(function() {
             errEl.textContent = '';
             input.style.borderColor = 'rgba(0,255,65,0.28)';
             input.style.boxShadow = 'none';
+            if (inputNom) { inputNom.style.borderColor = 'rgba(0,255,65,0.28)'; inputNom.style.boxShadow = 'none'; }
         }, 2500);
     }
 
@@ -840,65 +859,49 @@
         setTimeout(function() { gate.style.display = 'none'; }, 500);
     }
 
-    function verifyWithJSON(code, isAutoCheck) {
+    function verifyWithJSON(code, nom, isAutoCheck) {
         fetch('clients.json?nocache=' + Date.now())
             .then(function(r) {
                 if (!r.ok) throw new Error('fetch_fail');
                 return r.json();
             })
             .then(function(data) {
-                var found = data.clients.find(function(c) { return c.code === code; });
+                // Vérifier que le code ET le nom correspondent exactement
+                var found = data.clients.find(function(c) {
+                    return c.code === code && c.nom === nom;
+                });
 
                 if (!found) {
                     localStorage.removeItem('crypt_code');
                     localStorage.removeItem('crypt_nom');
-                    showError('CODE INVALIDE');
+                    localStorage.removeItem('crypt_ts');
+                    if (!isAutoCheck) showError('IDENTIFIANT OU CODE INVALIDE');
                     return;
                 }
 
                 if (found.statut !== 'accès') {
                     localStorage.removeItem('crypt_code');
                     localStorage.removeItem('crypt_nom');
+                    localStorage.removeItem('crypt_ts');
                     if (isAutoCheck) {
-                        showError('ABONNEMENT SUSPENDU\nContactez l\'administrateur', '#ff2a2a');
+                        showError('ABONNEMENT SUSPENDU\nContactez l\'administrateur');
                     } else {
                         showError('ACCÈS REFUSÉ');
                     }
                     return;
                 }
 
-                // Statut accès — vérifier le nom si déjà enregistré
-                var savedNom = localStorage.getItem('crypt_nom');
-                if (isAutoCheck && savedNom) {
-                    // Vérifier que le nom en LocalStorage correspond bien au JSON
-                    if (savedNom !== found.nom) {
-                        localStorage.removeItem('crypt_code');
-                        localStorage.removeItem('crypt_nom');
-                        showError('ACCÈS REFUSÉ');
-                        return;
-                    }
-                    unlock();
-                    return;
-                }
-
-                if (!isAutoCheck) {
-                    // Première saisie manuelle — vérifier si ce code est déjà pris par un autre nom
-                    var savedNomExistant = localStorage.getItem('crypt_nom');
-                    if (savedNomExistant && savedNomExistant !== found.nom) {
-                        // Ce téléphone a déjà un autre compte enregistré
-                        showError('ACCÈS REFUSÉ');
-                        return;
-                    }
-                    // Tout bon — enregistrer code + nom
-                    localStorage.setItem('crypt_code', code);
-                    localStorage.setItem('crypt_nom', found.nom);
-                    unlock();
-                }
+                // Tout correspond — enregistrer et ouvrir
+                localStorage.setItem('crypt_code', code);
+                localStorage.setItem('crypt_nom', nom);
+                localStorage.setItem('crypt_ts', Date.now().toString());
+                unlock();
             })
             .catch(function() {
                 var savedCode = localStorage.getItem('crypt_code');
                 var savedNom  = localStorage.getItem('crypt_nom');
-                if (savedCode && savedCode === code && savedNom && isAutoCheck) {
+                var savedTs   = localStorage.getItem('crypt_ts');
+                if (savedCode && savedCode === code && savedNom === nom && savedTs && isAutoCheck) {
                     unlock();
                 } else {
                     showError('ERREUR RÉSEAU — Réessayez');
@@ -908,21 +911,27 @@
 
     function tryCode() {
         var code = input.value.trim();
-        if (!code) return;
-        verifyWithJSON(code, false);
+        var nom  = inputNom ? inputNom.value.trim() : '';
+        if (!code || !nom) { showError('REMPLISSEZ LES DEUX CHAMPS'); return; }
+        verifyWithJSON(code, nom, false);
     }
 
-    // Au chargement : vérifier le LocalStorage d'abord
-    var saved = localStorage.getItem('crypt_code');
-    if (saved) {
-        verifyWithJSON(saved, true);
+    // Au chargement : si déjà enregistré, vérifier silencieusement
+    var savedCode = localStorage.getItem('crypt_code');
+    var savedNom  = localStorage.getItem('crypt_nom');
+    if (savedCode && savedNom) {
+        verifyWithJSON(savedCode, savedNom, true);
     }
-    // L'écran noir reste visible pendant le fetch (display:flex par défaut)
 
     btn.addEventListener('click', tryCode);
     input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); tryCode(); }
     });
+    if (inputNom) {
+        inputNom.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); input.focus(); }
+        });
+    }
 })();
 </script>
 <canvas id="matrix"></canvas>
