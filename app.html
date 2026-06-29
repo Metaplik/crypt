@@ -725,6 +725,185 @@
     </style>
 </head>
 <body>
+
+<!-- ===== ÉCRAN NOIR DE SÉCURITÉ ===== -->
+<div id="crypt-gate" style="
+    display:flex;
+    position:fixed;inset:0;z-index:99999;
+    background:#000;
+    flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:16px;
+    font-family:'Orbitron',sans-serif;
+">
+    <!-- Petit canvas Matrix derrière l'écran de sécurité -->
+    <canvas id="gate-matrix" style="position:absolute;inset:0;opacity:0.18;pointer-events:none;"></canvas>
+
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div style="font-size:30px;font-weight:900;letter-spacing:10px;color:#00ff41;text-shadow:0 0 22px #00ff41,0 0 60px rgba(0,255,65,0.3);">CRYPT</div>
+        <div style="font-size:9px;letter-spacing:5px;color:#006618;margin-top:-10px;">SECURE · ENCRYPTED</div>
+
+        <div style="width:1px;height:28px;background:linear-gradient(to bottom,transparent,rgba(0,255,65,0.4),transparent);margin:4px 0;"></div>
+
+        <div style="font-size:9px;letter-spacing:3px;color:#006618;">CODE D'ACCÈS</div>
+
+        <input id="crypt-input" type="password" placeholder="••••••" autocomplete="off" style="
+            padding:13px 20px;
+            background:rgba(0,255,65,0.04);
+            border:1px solid rgba(0,255,65,0.28);
+            border-radius:10px;
+            color:#00ff41;
+            font-size:22px;
+            font-family:'Share Tech Mono',monospace;
+            letter-spacing:6px;
+            outline:none;
+            text-align:center;
+            width:210px;
+            transition:border-color 0.2s,box-shadow 0.2s;
+        ">
+
+        <button id="crypt-gate-btn" style="
+            padding:11px 36px;
+            background:linear-gradient(135deg,rgba(0,255,65,0.1),rgba(0,255,65,0.04));
+            border:1px solid #00cc33;
+            border-radius:8px;
+            color:#00ff41;
+            font-family:'Orbitron',sans-serif;
+            font-size:11px;
+            font-weight:700;
+            letter-spacing:3px;
+            cursor:pointer;
+            transition:all 0.15s;
+        ">ENTRER</button>
+
+        <div id="crypt-error" style="font-size:10px;letter-spacing:2px;min-height:16px;text-align:center;max-width:260px;line-height:1.5;"></div>
+    </div>
+</div>
+<!-- ===== FIN ÉCRAN NOIR ===== -->
+
+<script>
+// ===== GATE MATRIX (petit effet Matrix derrière l'écran de sécurité) =====
+(function() {
+    var gc = document.getElementById('gate-matrix');
+    if (!gc) return;
+    var gx = gc.getContext('2d');
+    var gw, gh, gcols, gdrops;
+    var gchars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノ";
+    function resizeGate() {
+        gw = window.innerWidth; gh = window.innerHeight;
+        gc.width = gw; gc.height = gh;
+        gcols = Math.floor(gw / 16) + 2;
+        gdrops = new Array(gcols).fill(0).map(function() { return Math.random() * -gh; });
+    }
+    function drawGate() {
+        if (!document.getElementById('crypt-gate') || document.getElementById('crypt-gate').style.display === 'none') return;
+        gx.fillStyle = 'rgba(0,0,0,0.06)';
+        gx.fillRect(0, 0, gw, gh);
+        gx.fillStyle = '#00ff41';
+        gx.font = '14px "Share Tech Mono",monospace';
+        for (var i = 0; i < gcols; i++) {
+            var ch = gchars[Math.floor(Math.random() * gchars.length)];
+            gx.fillText(ch, i * 16, gdrops[i] * 16);
+            if (gdrops[i] * 16 > gh && Math.random() > 0.975) gdrops[i] = 0;
+            gdrops[i]++;
+        }
+        requestAnimationFrame(drawGate);
+    }
+    window.addEventListener('resize', resizeGate);
+    resizeGate(); drawGate();
+})();
+
+// ===== SYSTÈME DE SÉCURITÉ FETCH JSON =====
+(function() {
+    var input  = document.getElementById('crypt-input');
+    var errEl  = document.getElementById('crypt-error');
+    var btn    = document.getElementById('crypt-gate-btn');
+    var gate   = document.getElementById('crypt-gate');
+
+    function showError(msg, color) {
+        color = color || '#ff2a2a';
+        errEl.textContent = msg;
+        errEl.style.color = color;
+        input.value = '';
+        input.style.borderColor = color;
+        input.style.boxShadow = '0 0 12px ' + color + '44';
+        setTimeout(function() {
+            errEl.textContent = '';
+            input.style.borderColor = 'rgba(0,255,65,0.28)';
+            input.style.boxShadow = 'none';
+        }, 2500);
+    }
+
+    function unlock() {
+        gate.style.opacity = '0';
+        gate.style.transition = 'opacity 0.5s';
+        setTimeout(function() { gate.style.display = 'none'; }, 500);
+    }
+
+    function verifyWithJSON(code, isAutoCheck) {
+        fetch('clients.json?nocache=' + Date.now())
+            .then(function(r) {
+                if (!r.ok) throw new Error('fetch_fail');
+                return r.json();
+            })
+            .then(function(data) {
+                var found = data.clients.find(function(c) { return c.code === code; });
+
+                if (!found) {
+                    // Code inexistant dans le JSON
+                    if (isAutoCheck) {
+                        // Venait du LocalStorage mais n'existe plus → effacer
+                        localStorage.removeItem('crypt_code');
+                    }
+                    showError('CODE INVALIDE');
+                    return;
+                }
+
+                if (found.statut === 'accès') {
+                    localStorage.setItem('crypt_code', code);
+                    unlock();
+                } else {
+                    // Statut bloqué
+                    localStorage.removeItem('crypt_code');
+                    if (isAutoCheck) {
+                        // Revenu automatiquement → message abonnement
+                        showError('ABONNEMENT SUSPENDU\nContactez l\'administrateur', '#ff2a2a');
+                    } else {
+                        showError('ACCÈS REFUSÉ');
+                    }
+                }
+            })
+            .catch(function() {
+                // Fetch échoué (hors ligne, fichier absent) → si code en LocalStorage on laisse passer en mode dégradé
+                var saved = localStorage.getItem('crypt_code');
+                if (saved && saved === code && isAutoCheck) {
+                    unlock();
+                } else {
+                    showError('ERREUR RÉSEAU — Réessayez');
+                }
+            });
+    }
+
+    function tryCode() {
+        var code = input.value.trim();
+        if (!code) return;
+        verifyWithJSON(code, false);
+    }
+
+    // Au chargement : vérifier le LocalStorage d'abord
+    var saved = localStorage.getItem('crypt_code');
+    if (saved) {
+        // Code déjà connu → vérifier quand même le JSON (statut peut avoir changé)
+        verifyWithJSON(saved, true);
+    }
+    // L'écran noir reste visible pendant le fetch (display:flex par défaut)
+
+    btn.addEventListener('click', tryCode);
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); tryCode(); }
+    });
+})();
+</script>
 <canvas id="matrix"></canvas>
 
 <div id="lightbox">
@@ -1355,7 +1534,8 @@ function addConnection(conn) {
         if (data.type === 'audio' && data.blob) {
             if (!speakerMuted) {
                 var blob = new Blob([data.blob], {type:'audio/webm'});
-                new Audio(URL.createObjectURL(blob)).play();
+                var aud = new Audio(URL.createObjectURL(blob));
+                aud.play().catch(function(e){ console.log('Audio play bloqué:', e); });
             }
             if (isHost) broadcast(data, conn);
         }
@@ -1686,14 +1866,20 @@ function compressImage(file, maxWidth, quality) {
     });
 }
 
-window.joinRoom = joinRoom;
-window.openLightbox = openLightbox;
-window.swapVideo = swapVideo;
+
+// ===================== NETTOYAGE SESSION (FERMETURE PROPRE) =====================
 window.addEventListener('beforeunload', function() {
     if (localStream) localStream.getTracks().forEach(t => t.stop());
-    if (peer) peer.destroy();
+    if (peer) { try { peer.destroy(); } catch(e){} }
+});
+// Nettoyage supplémentaire si la page est cachée (mobile passe en arrière-plan)
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+        Object.keys(activeCalls).forEach(function(pid) {
+            try { activeCalls[pid].close(); } catch(e) {}
+        });
+    }
 });
 </script>
 </body>
 </html>
-
