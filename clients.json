@@ -1,6 +1,6 @@
 {
   "clients": [
-    { "code": "1234", "statut": "accès" },
+    { "code": "000A", "statut": "accès" },
     { "code": "5678", "statut": "accès" },
     { "code": "9999", "statut": "bloqué" }
   ]
