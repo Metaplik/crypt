@@ -1,7 +1,7 @@
 {
   "clients": [
-    { "code": "2007", "nom": "Moi", "statut": "accès" },
-    { "code": "5678", "nom": "Toi", "statut": "accès" },
-    { "code": "9999", "nom": "Lui", "statut": "bloqué" }
+    { "code": "1234", "nom": "Patron", "statut": "accès" },
+    { "code": "0000", "nom": "Boss", "statut": "accès" },
+    { "code": "9999", "nom": "Autre", "statut": "bloqué" }
   ]
 }
